@@ -1,2 +1,2 @@
-:HL["/tomskoe-pivo/_next/static/chunks/0ab0gtr-w11c_.css","style"]
-0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"/_not-found","param":null,"prefetchHints":0,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}}}},"staleTime":300,"buildId":"JwN91E7eDCxdNtOhdvVwE"}
+:HL["/tomskoe-pivo/_next/static/chunks/0it.n-ka0~57g.css","style"]
+0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"/_not-found","param":null,"prefetchHints":0,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}}}},"staleTime":300,"buildId":"Y3gFt5IAZnjSyansZCqiV"}
