@@ -272,6 +272,111 @@ function HoverPanel({ children, style }: { children: React.ReactNode; style?: Re
   );
 }
 
+/* ─── Карточка Университет с гравюрой ─── */
+function UniversityCard({ visible }: { visible: boolean }) {
+  const [hovered, setHovered] = useState(false);
+  const B2 = process.env.NEXT_PUBLIC_BASE ?? "";
+  return (
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        ...PANEL,
+        padding: 0,
+        overflow: "hidden",
+        position: "relative",
+        border: "1px solid rgba(201,162,39,0.22)",
+        opacity: visible ? 1 : 0,
+        transform: visible ? (hovered ? "translateY(-6px)" : "none") : "translateY(28px)",
+        transition: "opacity 0.6s ease 80ms, transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease",
+        boxShadow: hovered ? "0 16px 40px rgba(0,0,0,0.5), 0 0 24px rgba(201,162,39,0.12)" : "none",
+        borderColor: hovered ? "rgba(201,162,39,0.4)" : "rgba(201,162,39,0.22)",
+        minHeight: "240px",
+        background: "#0a0804",
+      }}
+    >
+      {/* Гравюра как фон */}
+      <img
+        src={`${B2}/history/university-1887.jpg`}
+        alt="Томский Императорский университет, 1887"
+        loading="eager"
+        decoding="async"
+        style={{
+          position: "absolute", inset: 0,
+          width: "100%", height: "100%",
+          objectFit: "cover",
+          objectPosition: "center 30%",
+          filter: "sepia(0.6) brightness(0.45) contrast(1.1)",
+          transition: "filter 0.4s ease, transform 0.4s ease",
+          transform: hovered ? "scale(1.04)" : "scale(1)",
+        }}
+      />
+
+      {/* Градиент снизу — для читаемости текста */}
+      <div style={{
+        position: "absolute", inset: 0,
+        background: "linear-gradient(to top, rgba(8,6,3,0.97) 0%, rgba(8,6,3,0.5) 50%, rgba(8,6,3,0.1) 100%)",
+        pointerEvents: "none",
+      }} />
+      {/* Тонкий золотой оверлей при ховере */}
+      <div style={{
+        position: "absolute", inset: 0,
+        background: "rgba(201,162,39,0.04)",
+        opacity: hovered ? 1 : 0,
+        transition: "opacity 0.3s ease",
+        pointerEvents: "none",
+      }} />
+
+      {/* Бейдж верхний левый */}
+      <div style={{ position: "absolute", top: "14px", left: "14px" }}>
+        <span style={{
+          fontFamily: "monospace", fontSize: "8px", letterSpacing: "0.4em",
+          textTransform: "uppercase", color: "rgba(201,162,39,0.75)",
+          background: "rgba(8,6,3,0.7)", backdropFilter: "blur(4px)",
+          border: "1px solid rgba(201,162,39,0.25)", borderRadius: "6px",
+          padding: "3px 8px",
+        }}>
+          Образование
+        </span>
+      </div>
+      {/* Год — верхний правый */}
+      <div style={{ position: "absolute", top: "14px", right: "14px" }}>
+        <span style={{
+          fontFamily: "monospace", fontSize: "8px", letterSpacing: "0.3em",
+          color: "rgba(201,162,39,0.6)",
+          background: "rgba(8,6,3,0.6)", backdropFilter: "blur(4px)",
+          border: "1px solid rgba(255,255,255,0.08)", borderRadius: "6px",
+          padding: "3px 8px",
+        }}>
+          1887
+        </span>
+      </div>
+
+      {/* Текст снизу */}
+      <div style={{ position: "relative", padding: "24px", marginTop: "auto", display: "flex", flexDirection: "column", gap: "8px", justifyContent: "flex-end", minHeight: "240px" }}>
+        <div style={{ marginTop: "auto" }}>
+          <p style={{
+            fontFamily: "sans-serif", fontSize: "clamp(1rem,1.6vw,1.35rem)",
+            fontWeight: 900, color: "#f5f0e8", letterSpacing: "-0.02em", lineHeight: 1.2,
+            marginBottom: "8px",
+            textShadow: "0 2px 12px rgba(0,0,0,0.8)",
+          }}>
+            Первый университет<br />за Уралом
+          </p>
+          <p style={{ fontFamily: "monospace", fontSize: "10px", color: "rgba(255,255,255,0.45)", lineHeight: 1.55 }}>
+            Купцы дали 400&nbsp;000 ₽ · Александр II · 1878
+          </p>
+          <div style={{ marginTop: "10px", paddingTop: "10px", borderTop: "1px solid rgba(201,162,39,0.15)" }}>
+            <p style={{ fontFamily: "monospace", fontSize: "8.5px", color: "rgba(201,162,39,0.55)", letterSpacing: "0.15em" }}>
+              Гравюра · Нива · 1887
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function WorldOf1876Section() {
   const headerReveal = useReveal(0.1);
   const row1Reveal = useReveal(0.05);
@@ -402,33 +507,8 @@ export function WorldOf1876Section() {
             <div style={DETAIL}>Главный транспортный узел Сибири</div>
           </HoverPanel>
 
-          {/* Образование */}
-          <HoverPanel style={{
-            background: "linear-gradient(145deg, rgba(201,162,39,0.06) 0%, rgba(8,6,3,0.8) 100%)",
-            border: "1px solid rgba(201,162,39,0.18)",
-            opacity: row2Reveal.visible ? 1 : 0,
-            transform: row2Reveal.visible ? "none" : "translateY(28px)",
-            transition: "opacity 0.6s ease 80ms, transform 0.6s ease 80ms, box-shadow 0.25s ease, border-color 0.25s ease",
-          }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <p style={LABEL}>Образование</p>
-              <span style={{ fontSize: "1.3rem" }}>🎓</span>
-            </div>
-            <div style={{ position: "relative" }}>
-              <span aria-hidden="true" style={{ position: "absolute", top: "-6px", left: "-4px", fontFamily: "sans-serif", fontWeight: 900, fontSize: "clamp(3rem,5vw,4.5rem)", color: "rgba(201,162,39,0.13)", letterSpacing: "-0.05em", lineHeight: 1, pointerEvents: "none", userSelect: "none" }}>
-                1878
-              </span>
-              <p style={{ fontFamily: "sans-serif", fontSize: "clamp(1.1rem,1.8vw,1.5rem)", fontWeight: 900, color: "#f5f0e8", letterSpacing: "-0.02em", lineHeight: 1.15, position: "relative", paddingTop: "clamp(2.4rem,3vw,3.2rem)" }}>
-                Первый университет<br />за Уралом
-              </p>
-            </div>
-            <p style={{ fontFamily: "monospace", fontSize: "10px", color: "rgba(255,255,255,0.38)", lineHeight: 1.6 }}>
-              Купцы дали 400&nbsp;000 ₽ на строительство
-            </p>
-            <p style={{ fontFamily: "monospace", fontSize: "9px", color: "rgba(201,162,39,0.5)", borderTop: "1px solid rgba(201,162,39,0.1)", paddingTop: "8px" }}>
-              Александр II · указ 1878
-            </p>
-          </HoverPanel>
+          {/* Образование — с гравюрой */}
+          <UniversityCard visible={row2Reveal.visible} />
 
           {/* Инфраструктура */}
           <HoverPanel style={{
