@@ -17,6 +17,8 @@ function useReveal(threshold = 0.15) {
   return { ref, visible };
 }
 
+const B = process.env.NEXT_PUBLIC_BASE ?? "";
+
 const BARLEY_BARS = [
   { month: "Авг 1914", value: 20, label: "20 пудов" },
   { month: "Окт 1914", value: 60, label: "60 пудов" },
@@ -26,6 +28,72 @@ const BARLEY_BARS = [
   { month: "Янв 1916", value: 350, label: "350 пудов" },
   { month: "Апр 1916", value: 400, label: "400 пудов" },
 ];
+
+function AlexandraVideo() {
+  const ref = useRef<HTMLVideoElement>(null);
+  const [playing, setPlaying] = useState(false);
+  const toggle = () => {
+    if (!ref.current) return;
+    if (playing) { ref.current.pause(); setPlaying(false); }
+    else { ref.current.play().catch(() => {}); setPlaying(true); }
+  };
+  return (
+    <div className="relative rounded-2xl overflow-hidden bg-black cursor-pointer group" style={{ aspectRatio: "9/16" }} onClick={toggle}>
+      <video ref={ref} src={`${B}/scenes/aleksandra.mp4`}
+        className="absolute inset-0 w-full h-full object-contain" muted playsInline loop />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+      {!playing && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-14 h-14 rounded-full border-2 border-accent/60 bg-accent/15 flex items-center justify-center backdrop-blur-md group-hover:scale-110 transition-transform">
+            <span className="text-accent text-lg ml-1">▶</span>
+          </div>
+        </div>
+      )}
+      <div className="absolute bottom-3 left-3 card-surface px-2.5 py-1">
+        <p className="font-mono text-[8px] tracking-[0.25em] text-accent uppercase">AI-сцена · Александра</p>
+      </div>
+    </div>
+  );
+}
+
+/* Семейное фото с выделением Александры */
+function FamilyPhoto() {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <div className="relative overflow-hidden rounded-2xl group" style={{ aspectRatio: "1/1" }}>
+      <img src={`${B}/history/family-robert.jpg`} alt="Семья Крюгеров" loading="lazy" decoding="async"
+        className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-103" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+
+      {/* Кружок-выделение Александры (правый угол снимка) */}
+      <div
+        className="absolute cursor-pointer"
+        style={{ right: "8%", top: "12%", width: "28%", aspectRatio: "1/1" }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+      >
+        {/* Анимированное кольцо */}
+        <div className="absolute inset-0 rounded-full border-2 border-accent animate-pulse" />
+        <div className={`absolute inset-0 rounded-full border border-accent/50 transition-all duration-300 ${hovered ? "scale-110" : "scale-100"}`} />
+        {/* Линия-указатель */}
+        <svg className="absolute -bottom-8 -left-16 w-20 h-12 pointer-events-none" viewBox="0 0 80 48">
+          <path d="M 70 4 Q 40 4 10 44" stroke="rgba(201,162,39,0.6)" strokeWidth="1" fill="none" strokeDasharray="3,3" />
+          <circle cx="10" cy="44" r="2" fill="rgba(201,162,39,0.7)" />
+        </svg>
+        {/* Подпись */}
+        <div className={`absolute -bottom-14 -left-20 transition-all duration-300 ${hovered ? "opacity-100" : "opacity-70"}`}>
+          <div className="bg-black/80 backdrop-blur-sm border border-accent/30 rounded-lg px-2.5 py-1.5">
+            <p className="font-mono text-[9px] tracking-[0.2em] text-accent uppercase whitespace-nowrap">Александра Крюгер</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="absolute bottom-3 left-3">
+        <p className="font-mono text-[8px] tracking-[0.25em] text-white/50 uppercase">Семья Крюгеров</p>
+      </div>
+    </div>
+  );
+}
 
 export function AlexandraSection() {
   const headerReveal = useReveal(0.2);
@@ -66,6 +134,12 @@ export function AlexandraSection() {
             Война началась — Роберт застрял в Германии. Россия объявила сухой закон.
             Пиво оказалось под запретом. Александра осталась одна.
           </p>
+        </div>
+
+        {/* Видео + семейное фото */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
+          <AlexandraVideo />
+          <FamilyPhoto />
         </div>
 
         {/* Основная раскладка: цитата + статистика */}

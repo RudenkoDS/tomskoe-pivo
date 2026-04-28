@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect } from "react";
 
 /* ── Scroll-reveal hook ── */
 function useReveal(threshold = 0.15) {
@@ -20,25 +20,26 @@ function useReveal(threshold = 0.15) {
    vertical: true  → 9:16 (716×1284 или 720×1280)
    vertical: false → 16:9 (1284×716)
 ────────────────────────────────────────────── */
+const B = process.env.NEXT_PUBLIC_BASE ?? "";
 const KARL_GRID: { src: string; label: string; vertical: boolean }[] = [
-  { src: "/scenes/karl-zakl-kamnya.mp4",  label: "Закладка камня",    vertical: true  },
-  { src: "/scenes/karl-lab.mp4",          label: "Лаборатория",       vertical: true  },
-  { src: "/scenes/karl-partnery.mp4",     label: "Карл и партнёры",   vertical: false },
-  { src: "/scenes/karl-handshake.mp4",    label: "Рукопожатие",       vertical: false },
-  { src: "/scenes/karl-chertezh.mp4",     label: "Карл и чертёж",     vertical: false },
-  { src: "/scenes/karl-kvartira.mp4",     label: "В квартире",        vertical: false },
+  { src: `${B}/scenes/karl-zakl-kamnya.mp4`,  label: "Закладка камня",    vertical: true  },
+  { src: `${B}/scenes/karl-lab.mp4`,          label: "Лаборатория",       vertical: true  },
+  { src: `${B}/scenes/karl-partnery.mp4`,     label: "Карл и партнёры",   vertical: false },
+  { src: `${B}/scenes/karl-handshake.mp4`,    label: "Рукопожатие",       vertical: false },
+  { src: `${B}/scenes/karl-chertezh.mp4`,     label: "Карл и чертёж",     vertical: false },
+  { src: `${B}/scenes/karl-kvartira.mp4`,     label: "В квартире",        vertical: false },
 ];
 
 /* ──────────────────────────────────────────────
    Роберт Крюгер — сцены (все 16:9)
 ────────────────────────────────────────────── */
 const ROBERT_GRID = [
-  { src: "/scenes/robert-chertezh.mp4",  label: "Роберт и чертёж"    },
-  { src: "/scenes/robert-rabochie.mp4",  label: "Роберт и рабочие"   },
-  { src: "/scenes/robert-handshake.mp4", label: "Рукопожатие"        },
-  { src: "/scenes/zames.mp4",            label: "Замес на заводе"    },
-  { src: "/scenes/povozka.mp4",          label: "Повозки с бочками"  },
-  { src: "/scenes/loshadi-led.mp4",      label: "Лошади и лёд"       },
+  { src: `${B}/scenes/robert-chertezh.mp4`,  label: "Роберт и чертёж"    },
+  { src: `${B}/scenes/robert-rabochie.mp4`,  label: "Роберт и рабочие"   },
+  { src: `${B}/scenes/robert-handshake.mp4`, label: "Рукопожатие"        },
+  { src: `${B}/scenes/zames.mp4`,            label: "Замес на заводе"    },
+  { src: `${B}/scenes/povozka.mp4`,          label: "Повозки с бочками"  },
+  { src: `${B}/scenes/loshadi-led.mp4`,      label: "Лошади и лёд"       },
 ];
 
 /* ──────────────────────────────────────────────
@@ -142,11 +143,11 @@ function MainVideo({ src, vertical = false }: { src: string; vertical?: boolean 
    Архивный блок — reveal-анимация
 ────────────────────────────────────────────── */
 const ARCHIVE_ITEMS = [
-  { src: "/history/factory-engraving.jpg",  alt: "Гравюра завода",             label: "Гравюра · 1884",        contain: false, delay: 0   },
-  { src: "/history/zavod-kruger.jpg",        alt: "Завод Крюгеръ",              label: "Пивзавод · Томск",      contain: false, delay: 80  },
-  { src: "/history/label-bavarian.jpg",      alt: "Баварское пиво — этикетка",  label: "Баварское",             contain: true,  delay: 160 },
-  { src: "/history/label-pilsner.jpg",       alt: "Пильзенское — этикетка",     label: "Пильзенское",           contain: true,  delay: 240 },
-  { src: "/history/pivo-kruger.jpg",         alt: "Пиво Крюгеръ — реклама",    label: "Пиво Крюгеръ",          contain: true,  delay: 320 },
+  { src: `${B}/history/factory-engraving.jpg`,  alt: "Гравюра завода",             label: "Гравюра · 1884",        contain: false, delay: 0   },
+  { src: `${B}/history/zavod-kruger.jpg`,        alt: "Завод Крюгеръ",              label: "Пивзавод · Томск",      contain: false, delay: 80  },
+  { src: `${B}/history/label-bavarian.jpg`,      alt: "Баварское пиво — этикетка",  label: "Баварское",             contain: true,  delay: 160 },
+  { src: `${B}/history/label-pilsner.jpg`,       alt: "Пильзенское — этикетка",     label: "Пильзенское",           contain: true,  delay: 240 },
+  { src: `${B}/history/pivo-kruger.jpg`,         alt: "Пиво Крюгеръ — реклама",    label: "Пиво Крюгеръ",          contain: true,  delay: 320 },
 ];
 
 function ArchiveSection() {
@@ -155,7 +156,7 @@ function ArchiveSection() {
   const gridReveal = useReveal(0.05);
 
   return (
-    <div className="border-t border-amber-900/15 overflow-hidden" style={{ background: "linear-gradient(to bottom, #080603, #0a0804)" }}>
+    <div className="relative border-t border-amber-900/15 overflow-hidden" style={{ background: "linear-gradient(to bottom, #080603, #0a0804)" }}>
       {/* Зернистость */}
       <div className="pointer-events-none absolute inset-0 opacity-[0.035]" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")", backgroundSize: "200px 200px" }} />
 
@@ -164,8 +165,13 @@ function ArchiveSection() {
         {/* Заголовок */}
         <div
           ref={titleReveal.ref}
-          className="mb-14 flex flex-col md:flex-row md:items-end gap-4 md:gap-16 transition-all duration-1000"
-          style={{ opacity: titleReveal.visible ? 1 : 0, transform: titleReveal.visible ? "translateY(0)" : "translateY(32px)", filter: titleReveal.visible ? "blur(0)" : "blur(6px)" }}
+          className="mb-14 flex flex-col md:flex-row md:items-end gap-4 md:gap-16"
+          style={{
+            opacity: titleReveal.visible ? 1 : 0,
+            transform: titleReveal.visible ? "translateY(0)" : "translateY(32px)",
+            transition: "opacity 0.8s ease, transform 0.8s ease",
+            willChange: "transform, opacity",
+          }}
         >
           <div>
             <p className="font-mono text-[10px] tracking-[0.45em] text-accent/60 uppercase mb-3">
@@ -186,13 +192,19 @@ function ArchiveSection() {
           {/* Портрет Карла — слева, высокий */}
           <div
             ref={portraitReveal.ref}
-            className="transition-all duration-1000 delay-100"
-            style={{ opacity: portraitReveal.visible ? 1 : 0, transform: portraitReveal.visible ? "translateX(0) scale(1)" : "translateX(-40px) scale(0.97)", filter: portraitReveal.visible ? "blur(0)" : "blur(8px)" }}
+            style={{
+              opacity: portraitReveal.visible ? 1 : 0,
+              transform: portraitReveal.visible ? "translateX(0)" : "translateX(-40px)",
+              transition: "opacity 0.9s ease 0.1s, transform 0.9s ease 0.1s",
+              willChange: "transform, opacity",
+            }}
           >
             <div className="relative overflow-hidden rounded-2xl group" style={{ aspectRatio: "3/4" }}>
               <img
-                src="/history/karl-kruger.jpg"
+                src={`${B}/history/karl-kruger.jpg`}
                 alt="Карл Крюгер. Основатель завода"
+                loading="lazy"
+                decoding="async"
                 className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-1000 group-hover:scale-105"
               />
               {/* Сепия-оверлей */}
@@ -217,7 +229,7 @@ function ArchiveSection() {
             ref={gridReveal.ref}
             className="grid grid-cols-2 md:grid-cols-3 gap-3"
           >
-            {ARCHIVE_ITEMS.map((item, i) => (
+            {ARCHIVE_ITEMS.map((item) => (
               <div
                 key={item.src}
                 className="relative overflow-hidden rounded-xl group cursor-pointer"
@@ -225,14 +237,16 @@ function ArchiveSection() {
                   aspectRatio: item.contain ? "3/4" : "4/3",
                   background: "#0d0b08",
                   opacity: gridReveal.visible ? 1 : 0,
-                  transform: gridReveal.visible ? "translateY(0) scale(1)" : "translateY(48px) scale(0.96)",
-                  filter: gridReveal.visible ? "blur(0)" : "blur(10px)",
-                  transition: `opacity 0.8s ease ${item.delay}ms, transform 0.8s ease ${item.delay}ms, filter 0.8s ease ${item.delay}ms`,
+                  transform: gridReveal.visible ? "translateY(0)" : "translateY(40px)",
+                  transition: `opacity 0.7s ease ${item.delay}ms, transform 0.7s ease ${item.delay}ms`,
+                  willChange: "transform, opacity",
                 }}
               >
                 <img
                   src={item.src}
                   alt={item.alt}
+                  loading="lazy"
+                  decoding="async"
                   className={`absolute inset-0 w-full h-full transition-transform duration-700 group-hover:scale-105 ${item.contain ? "object-contain p-3" : "object-cover"}`}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
@@ -252,8 +266,9 @@ function ArchiveSection() {
                 border: "1px solid rgba(200,146,42,0.15)",
                 aspectRatio: "4/3",
                 opacity: gridReveal.visible ? 1 : 0,
-                transform: gridReveal.visible ? "translateY(0)" : "translateY(48px)",
-                transition: `opacity 0.8s ease 400ms, transform 0.8s ease 400ms`,
+                transform: gridReveal.visible ? "translateY(0)" : "translateY(40px)",
+                transition: "opacity 0.7s ease 400ms, transform 0.7s ease 400ms",
+                willChange: "transform, opacity",
               }}
             >
               <p className="font-mono text-[8px] tracking-[0.3em] text-accent/60 uppercase mb-3">Цитата · 1876</p>
@@ -277,82 +292,125 @@ function ArchiveSection() {
   );
 }
 
-export function KrugerSection() {
+/* ── Огоньки ── */
+function EmberLine({ count = 18, side = "top" }: { count?: number; side?: "top" | "bottom" }) {
   return (
-    <section id="robert" className="bg-background border-t border-amber-900/15">
+    <div className={`absolute left-0 right-0 ${side === "top" ? "top-0" : "bottom-0"} h-6 overflow-hidden pointer-events-none z-10`}>
+      {Array.from({ length: count }).map((_, i) => (
+        <span key={i} className="absolute bottom-0 rounded-full" style={{
+          left: `${(i / count) * 100 + (i % 3) * 0.8}%`,
+          width: `${1 + (i % 3) * 0.6}px`,
+          height: `${5 + (i % 5) * 3}px`,
+          background: `linear-gradient(to top, rgba(201,162,39,${0.5 + (i % 4) * 0.12}), transparent)`,
+          animation: `kruger-ember ${1.6 + (i % 5) * 0.5}s ease-in-out infinite`,
+          animationDelay: `${(i % 7) * 0.4}s`,
+        }} />
+      ))}
+    </div>
+  );
+}
+
+/* ── Попап компонент ── */
+function InfoModal({ title, children, onClose }: { title: string; children: React.ReactNode; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={onClose}>
+      <div className="relative w-full max-w-xl card-surface p-8 md:p-10" onClick={e => e.stopPropagation()}>
+        <button onClick={onClose} className="absolute top-4 right-4 text-muted/50 hover:text-foreground transition-colors font-mono text-lg">✕</button>
+        <p className="font-mono text-[10px] tracking-[0.35em] text-accent/70 uppercase mb-4">{title}</p>
+        <div className="font-sans text-base text-muted leading-relaxed space-y-3">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+export function KrugerSection() {
+  const [popup, setPopup] = useState<null | "karl-move" | "robert-war">(null);
+
+  return (
+    <section id="robert" className="relative bg-background border-t border-amber-900/15 overflow-hidden">
+      <style>{`@keyframes kruger-ember { 0%,100%{transform:translateY(0) scaleX(1);opacity:.7} 50%{transform:translateY(-12px) scaleX(0.6);opacity:.25} }`}</style>
 
       {/* ═══════════════ КАРЛ КРЮГЕР ═══════════════ */}
-      <div className="mx-auto max-w-[1400px] px-6 md:px-10 py-24 md:py-32">
+      <div className="relative">
+        <EmberLine side="top" count={20} />
+        <div className="mx-auto max-w-[1400px] px-6 md:px-10 py-24 md:py-32">
 
-        {/* Header */}
-        <div className="mb-12 flex flex-col md:flex-row md:items-end gap-6 md:gap-16">
-          <div className="flex-1">
-            <p className="font-mono text-[10px] tracking-[0.45em] text-accent/80 uppercase mb-4">
-              1876 — Основание
-            </p>
-            <h2 className="font-sans text-4xl md:text-6xl font-black tracking-tighter text-foreground leading-[0.92]">
-              Карл<br /><span className="text-accent">Крюгер</span>
-            </h2>
+          {/* Header + портрет */}
+          <div className="mb-12 flex flex-col lg:flex-row lg:items-start gap-8 lg:gap-16">
+            {/* Текст + кнопка */}
+            <div className="flex-1">
+              <p className="font-mono text-[10px] tracking-[0.45em] text-accent/80 uppercase mb-4">1876 — Основание</p>
+              <h2 className="font-sans text-5xl md:text-7xl font-black tracking-tighter text-foreground leading-[0.88] mb-6">
+                Карл<br /><span className="text-accent">Крюгер</span>
+              </h2>
+              <p className="max-w-[48ch] font-sans text-base md:text-lg text-muted leading-relaxed mb-3">
+                Прусский пивовар из Кальтенборна. В 42 года пересёк полмира — из Германии в Сибирь. Он приехал не в глушь, а в крупнейший город Западной Сибири с богатым купечеством и полным отсутствием нормального пива.
+              </p>
+              <p className="max-w-[48ch] font-sans text-base text-muted leading-relaxed mb-6">
+                9 сентября 1876 года заложил первый камень у подножия Острожной горы. Когда университет потребовал землю — не стал спорить. Купил новый участок на Московском тракте и врезал подвалы прямо в склон горы: постоянные +4°C без льда и машин.
+              </p>
+              <button
+                onClick={() => setPopup("karl-move")}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-accent/30 text-foreground/80 font-mono text-[10px] tracking-[0.2em] uppercase hover:border-accent/60 hover:text-accent transition-all"
+              >
+                ↳ Подробнее: «Великий переезд» 1880–1884
+              </button>
+            </div>
+
+            {/* Портрет Карла */}
+            <div className="shrink-0 w-[200px] md:w-[240px]">
+              <div className="relative overflow-hidden rounded-2xl group" style={{ aspectRatio: "3/4" }}>
+                <img src={`${B}/history/karl-portrait.jpg`} alt="Карл Крюгер" loading="lazy" decoding="async"
+                  className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#080603]/90 via-transparent to-transparent" />
+                <div className="absolute bottom-4 left-4">
+                  <p className="font-mono text-[8px] tracking-[0.3em] text-accent uppercase mb-1">Основатель</p>
+                  <p className="font-sans text-sm font-black text-white">Карл Крюгер</p>
+                  <p className="font-mono text-[9px] text-white/40">1834–1884</p>
+                </div>
+              </div>
+            </div>
           </div>
-          <p className="max-w-[46ch] font-sans text-base text-muted leading-relaxed md:mb-1">
-            В 1876 году немецкий пивовар Карл Крюгер заложил первый камень своей пивоварни в Томске.
-            Когда университет потребовал землю — перенёс завод к подножию Острожной горы
-            на Московском тракте. Подвалы врезали в склон горы — постоянные +4°C без льда и машин.
-          </p>
-        </div>
 
-        {/*
-          Раскладка:
-          - слева: два вертикальных видео рядом (karl-zakl-kamnya + karl-lab)
-          - справа: главное горизонтальное видео + 2×2 сетка горизонтальных сцен
-        */}
-        <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-4 items-start">
+          {/* Видеосетка */}
+          <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-4 items-start">
+            <div className="flex gap-3 justify-center lg:justify-start">
+              {KARL_GRID.filter(v => v.vertical).map(v => (
+                <div key={v.src} className="w-[150px] md:w-[190px]">
+                  <VideoThumb src={v.src} label={v.label} vertical={true} />
+                </div>
+              ))}
+            </div>
+            <div className="flex flex-col gap-3">
+              <MainVideo src={`${B}/scenes/karl-istfak-1.mp4`} vertical={false} />
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {KARL_GRID.filter(v => !v.vertical).map(v => (
+                  <VideoThumb key={v.src} src={v.src} label={v.label} vertical={false} />
+                ))}
+              </div>
+            </div>
+          </div>
 
-          {/* Левая колонка — два вертикальных видео */}
-          <div className="flex gap-3 justify-center lg:justify-start">
-            {KARL_GRID.filter(v => v.vertical).map(v => (
-              <div key={v.src} className="w-[160px] md:w-[200px]">
-                <VideoThumb src={v.src} label={v.label} vertical={true} />
+          {/* Цитата + статы */}
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr] gap-4">
+            <div className="card-surface p-6 rounded-2xl flex flex-col justify-center" style={{ borderLeft: "2px solid rgba(201,162,39,0.4)" }}>
+              <p className="font-mono text-[10px] tracking-[0.3em] text-accent/70 uppercase mb-3">Цитата · 1884</p>
+              <p className="font-sans text-xl text-foreground leading-snug italic">
+                «Хороший завод должен стоять там, где сама природа помогает пивовару.»
+              </p>
+              <p className="mt-2 font-mono text-[11px] text-muted">— Карл Крюгер</p>
+            </div>
+            {[
+              { val: "1876", desc: "Год основания" },
+              { val: "1884", desc: "Московский тракт" },
+              { val: "+4°C", desc: "Холод подвалов" },
+            ].map(f => (
+              <div key={f.val} className="card-surface p-5 rounded-2xl text-center flex flex-col items-center justify-center">
+                <p className="font-sans text-4xl md:text-5xl font-black text-accent">{f.val}</p>
+                <p className="mt-1 font-mono text-[10px] tracking-[0.18em] text-muted uppercase">{f.desc}</p>
               </div>
             ))}
           </div>
-
-          {/* Правая колонка — главное видео + горизонтальные сцены */}
-          <div className="flex flex-col gap-3">
-            <MainVideo src="/scenes/karl-istfak-1.mp4" vertical={false} />
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {KARL_GRID.filter(v => !v.vertical).map(v => (
-                <VideoThumb key={v.src} src={v.src} label={v.label} vertical={false} />
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Цитата + факты */}
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr] gap-4">
-          <div className="card-surface p-6 rounded-2xl flex flex-col justify-center">
-            <p className="font-mono text-[10px] tracking-[0.3em] text-accent/70 uppercase mb-3">
-              Цитата · 1884
-            </p>
-            <p className="font-sans text-lg text-foreground leading-snug italic">
-              «Хороший завод должен стоять там, где сама природа помогает пивовару.»
-            </p>
-            <p className="mt-2 font-mono text-[11px] text-muted">
-              — Карл Крюгер, при переносе на Московский тракт
-            </p>
-          </div>
-          {[
-            { val: "1876", desc: "Год основания" },
-            { val: "1884", desc: "Московский тракт" },
-            { val: "+4°C", desc: "Холод подвалов" },
-          ].map(f => (
-            <div key={f.val} className="card-surface p-5 rounded-2xl text-center flex flex-col items-center justify-center">
-              <p className="font-sans text-3xl md:text-4xl font-black text-accent">{f.val}</p>
-              <p className="mt-1 font-mono text-[10px] tracking-[0.18em] text-muted uppercase leading-snug">
-                {f.desc}
-              </p>
-            </div>
-          ))}
         </div>
       </div>
 
@@ -360,55 +418,91 @@ export function KrugerSection() {
       <ArchiveSection />
 
       {/* ═══════════════ РОБЕРТ КРЮГЕР ═══════════════ */}
-      <div className="border-t border-amber-900/15 mx-auto max-w-[1400px] px-6 md:px-10 py-24 md:py-32">
+      <div className="relative border-t border-amber-900/15">
+        <div className="mx-auto max-w-[1400px] px-6 md:px-10 py-24 md:py-32">
 
-        {/* Header */}
-        <div className="mb-12 flex flex-col md:flex-row md:items-end gap-6 md:gap-16">
-          <div className="flex-1">
-            <p className="font-mono text-[10px] tracking-[0.45em] text-accent/80 uppercase mb-4">
-              1890–1912 — Золотой век
-            </p>
-            <h2 className="font-sans text-4xl md:text-6xl font-black tracking-tighter text-foreground leading-[0.92]">
-              Роберт<br /><span className="text-accent">Крюгер</span>
-            </h2>
-          </div>
-          <p className="max-w-[46ch] font-sans text-base text-muted leading-relaxed md:mb-1">
-            Племянник Карла превратил завод в технологическую витрину Сибири. Паровые двигатели,
-            пастеризация, 50 000 вёдер в год. Медали Парижа и Генуи. Снизил цену с 1р.40к
-            до 80к за ведро — и одним ударом выбил конкурентов с томского рынка.
-          </p>
-        </div>
+          {/* Header + портрет */}
+          <div className="mb-12 flex flex-col lg:flex-row lg:items-start gap-8 lg:gap-16">
+            <div className="flex-1">
+              <p className="font-mono text-[10px] tracking-[0.45em] text-accent/80 uppercase mb-4">1890–1912 — Золотой век</p>
+              <h2 className="font-sans text-5xl md:text-7xl font-black tracking-tighter text-foreground leading-[0.88] mb-6">
+                Роберт<br /><span className="text-accent">Крюгер</span>
+              </h2>
+              <p className="max-w-[48ch] font-sans text-base md:text-lg text-muted leading-relaxed mb-3">
+                Племянник Карла получил завод в 1890 году и превратил его в технологическую витрину Сибири. Паровые машины, пастеризация, собственная сеть трактиров. К 1912 году — абсолютный рекорд: 156 440 вёдер пива в год.
+              </p>
+              <p className="max-w-[48ch] font-sans text-base text-muted leading-relaxed mb-6">
+                В 1900-м снизил цену с 1 рубля 40 копеек до 80 копеек за ведро. Конкуренты не выдержали — объёмы Крюгера были в разы больше. Золотые медали Парижа и Генуи. 5 трактиров и 26 пивных лавок в Томске.
+              </p>
+              <button
+                onClick={() => setPopup("robert-war")}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-accent/30 text-foreground/80 font-mono text-[10px] tracking-[0.2em] uppercase hover:border-accent/60 hover:text-accent transition-all"
+              >
+                ↳ Демпинговая война 1900 года
+              </button>
+            </div>
 
-        {/* Robert 3×2 grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
-          {ROBERT_GRID.map(v => (
-            <VideoThumb key={v.src} src={v.src} label={v.label} vertical={false} />
-          ))}
-        </div>
+            {/* Портрет Роберта */}
+            <div className="shrink-0 w-[200px] md:w-[240px]">
+              <div className="relative overflow-hidden rounded-2xl group" style={{ aspectRatio: "3/4" }}>
+                <img src={`${B}/history/robert-portrait.jpg`} alt="Роберт Крюгер" loading="lazy" decoding="async"
+                  className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#080603]/90 via-transparent to-transparent" />
+                <div className="absolute bottom-4 left-4">
+                  <p className="font-mono text-[8px] tracking-[0.3em] text-accent uppercase mb-1">Золотой век</p>
+                  <p className="font-sans text-sm font-black text-white">Роберт Крюгер</p>
+                  <p className="font-mono text-[9px] text-white/40">1890–1914</p>
+                </div>
+              </div>
+            </div>
+          </div>
 
-        {/* Чехов + факт */}
-        <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4">
-          <div className="card-surface p-6 rounded-2xl">
-            <p className="font-mono text-[10px] tracking-[0.3em] text-accent/70 uppercase mb-3">
-              Современник · 1890
-            </p>
-            <p className="font-sans text-xl md:text-2xl text-foreground leading-snug italic">
-              «Стакан пива — лучшее моё средство от бессонницы в Томске»
-            </p>
-            <p className="mt-3 font-mono text-[11px] text-muted">
-              — Антон Павлович Чехов, из письма, Томск, 1890
-            </p>
+          {/* Видеосетка Роберта */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+            {ROBERT_GRID.map(v => (
+              <VideoThumb key={v.src} src={v.src} label={v.label} vertical={false} />
+            ))}
           </div>
-          <div className="card-surface p-8 rounded-2xl text-center flex flex-col items-center justify-center min-w-[180px]">
-            <p className="font-sans text-4xl font-black text-accent">50 000</p>
-            <p className="mt-1 font-mono text-[10px] tracking-[0.18em] text-muted uppercase">
-              вёдер в год
-            </p>
-            <p className="mt-2 font-mono text-[10px] text-muted/50">Медали Парижа и Генуи</p>
+
+          {/* Чехов + достижения */}
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_auto] gap-4">
+            <div className="card-surface p-6 rounded-2xl" style={{ borderLeft: "2px solid rgba(201,162,39,0.4)" }}>
+              <p className="font-mono text-[10px] tracking-[0.3em] text-accent/70 uppercase mb-3">Современник · 1890</p>
+              <p className="font-sans text-xl md:text-2xl text-foreground leading-snug italic">
+                «Стакан пива — лучшее моё средство от бессонницы в Томске»
+              </p>
+              <p className="mt-3 font-mono text-[11px] text-muted">— Антон Павлович Чехов, Томск, 1890</p>
+            </div>
+            <div className="card-surface p-6 rounded-2xl text-center flex flex-col items-center justify-center min-w-[160px]">
+              <p className="font-sans text-4xl md:text-5xl font-black text-accent">156 440</p>
+              <p className="mt-1 font-mono text-[10px] tracking-[0.15em] text-muted uppercase leading-snug">вёдер<br/>рекорд 1912</p>
+            </div>
+            <div className="card-surface p-6 rounded-2xl text-center flex flex-col items-center justify-center min-w-[160px]">
+              <p className="font-sans text-4xl font-black text-accent">2 🥇</p>
+              <p className="mt-1 font-mono text-[10px] tracking-[0.15em] text-muted uppercase leading-snug">Медали<br/>Париж · Генуя</p>
+            </div>
           </div>
         </div>
+        <EmberLine side="bottom" count={18} />
       </div>
 
+      {/* ═══════════════ ПОПАПЫ ═══════════════ */}
+      {popup === "karl-move" && (
+        <InfoModal title="1880–1884 · Великий переезд" onClose={() => setPopup(null)}>
+          <p>В 1878 году Александр II подписал указ об открытии первого университета в азиатской части России — именно в Томске. Площадка идеально совпала с участком Крюгера.</p>
+          <p>Власти всерьёз боялись, что студенты будут проводить время в заводском трактире, а не на лекциях. «Наука против духа» — так называли этот конфликт современники.</p>
+          <p>Карл не стал спорить. Он купил новый участок на Московском тракте и врезал подвалы прямо в склон Острожной горы — постоянные +4°C без льда и машин.</p>
+          <p><strong className="text-foreground">27 октября 1884 года</strong> завод официально запустили на новом месте. С этого дня и по сей день он стоит там же.</p>
+        </InfoModal>
+      )}
+      {popup === "robert-war" && (
+        <InfoModal title="1900 · Демпинговая война" onClose={() => setPopup(null)}>
+          <p>После раскола среди местных пивоваров Роберт пошёл на радикальный шаг: опустил отпускную цену с <strong className="text-foreground">1 рубля 40 копеек до 80 копеек за ведро</strong>.</p>
+          <p>Конкуренты не выдержали — объёмы Крюгера были в разы больше. Они работали в убыток, пока не закрылись. Роберт выиграл ценовую войну и монополизировал томский рынок.</p>
+          <p>К 1914 году он владел <strong className="text-foreground">5 трактирами и 26 пивными лавками</strong> в самом Томске — и контролировал весь путь пива от варочного котла до кружки покупателя.</p>
+          <p>Медали Парижской и Генуэзской выставок подтвердили: томское «Баварское» конкурировало с лучшими немецкими сортами.</p>
+        </InfoModal>
+      )}
     </section>
   );
 }
