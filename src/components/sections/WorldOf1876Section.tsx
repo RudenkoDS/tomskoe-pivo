@@ -1,8 +1,8 @@
 "use client";
 import { useRef, useState, useEffect } from "react";
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const _B = process.env.NEXT_PUBLIC_BASE ?? "";
+const B = process.env.NEXT_PUBLIC_BASE ?? "";
+void B; // используется в будущих расширениях
 
 function useReveal(threshold = 0.05) {
   const ref = useRef<HTMLDivElement>(null);
@@ -11,12 +11,7 @@ function useReveal(threshold = 0.05) {
     const el = ref.current;
     if (!el) return;
     const obs = new IntersectionObserver(
-      ([e]) => {
-        if (e.isIntersecting) {
-          setVisible(true);
-          obs.disconnect();
-        }
-      },
+      ([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); } },
       { threshold }
     );
     obs.observe(el);
@@ -25,7 +20,6 @@ function useReveal(threshold = 0.05) {
   return { ref, visible };
 }
 
-// Данные населения для SVG-графика
 const POPULATION_DATA = [
   { year: 1863, value: 32400 },
   { year: 1876, value: 33800 },
@@ -34,225 +28,85 @@ const POPULATION_DATA = [
   { year: 1897, value: 52221 },
 ];
 
-const TOMSK_CARDS = [
-  {
-    stat: "~33 800",
-    label: "Жителей в 1876",
-    detail:
-      "К 1897 году — 52 221. Рост на 54% за 17 лет. Быстрее любой российской столицы.",
-    delay: 0,
-  },
-  {
-    stat: "Золото",
-    label: "Двигатель экономики",
-    detail:
-      "Купцы Поповы нашли золото на Енисее в 1828-м. Томск стал финансовым центром всей сибирской добычи.",
-    delay: 60,
-  },
-  {
-    stat: "Купечество",
-    label: "Платёжеспособная элита",
-    detail:
-      "Гадалов, Кухтерин, Асташев. Доходы купцов 1-й гильдии — миллионы рублей в год. Им нужно хорошее пиво.",
-    delay: 120,
-  },
-  {
-    stat: "100 000+",
-    label: "Ямщиков на тракте",
-    detail:
-      "Московско-Сибирский тракт. Томск — главный узел: смена лошадей, отдых, разгрузка. Постоянный поток людей.",
-    delay: 180,
-  },
-  {
-    stat: "1878",
-    label: "Первый университет за Уралом",
-    detail:
-      "Указ Александра II об открытии именно в Томске. Купцы дали 400 000 рублей на строительство.",
-    delay: 240,
-  },
-  {
-    stat: "1890",
-    label: "Великое наводнение",
-    detail:
-      "Томь и Ушайка вышли из берегов. На площади Батенькова плавали лодки. Там же в 2012-м нашли бутылку Крюгера.",
-    delay: 300,
-  },
-  {
-    stat: "1896",
-    label: "Транссиб обошёл Томск",
-    detail:
-      "Мост через Обь построили в Новосибирске — дешевле. Томск получил 100-вёрстную ветку и остался региональным центром.",
-    delay: 360,
-  },
-  {
-    stat: "Областники",
-    label: "Сибирская идентичность",
-    detail:
-      "Потанин и Ядринцев считали Сибирь колонией Петербурга. Боролись за университет и справедливый раздел доходов.",
-    delay: 420,
-  },
+// Золотодобыча: условные данные роста (в тыс. пудов)
+const GOLD_DATA = [
+  { year: "1828", v: 8 },
+  { year: "1835", v: 22 },
+  { year: "1845", v: 45 },
+  { year: "1855", v: 60 },
+  { year: "1865", v: 78 },
+  { year: "1876", v: 95 },
 ];
 
 const WORLD_CARDS = [
   {
     year: "1871",
+    yearShort: "1871",
     label: "Объединение Германии",
-    detail:
-      "Отто фон Бисмарк объединил немецкие земли. Страна вошла в промышленный бум. Именно там учился пивному делу Карл Крюгер.",
-    delay: 0,
+    detail: "Отто фон Бисмарк объединил немецкие земли. Страна вошла в промышленный бум. Именно там учился пивному делу Карл Крюгер.",
+    accent: "rgba(201,162,39,0.7)",
   },
   {
     year: "1870–1900",
+    yearShort: "1900",
     label: "Прекрасная эпоха",
-    detail:
-      "Время мира и расцвета в Европе. Первые Олимпийские игры — 1896, Эйфелева башня — 1889. Мир менялся стремительно.",
-    delay: 80,
+    detail: "Время мира и расцвета в Европе. Первые Олимпийские игры — 1896, Эйфелева башня — 1889. Мир менялся стремительно.",
+    accent: "rgba(201,162,39,0.5)",
   },
   {
     year: "1861–1881",
+    yearShort: "1881",
     label: "Реформы Александра II",
-    detail:
-      "Отмена крепостного права, суд присяжных, земства. Россия открывалась новым людям — и новым предпринимателям.",
-    delay: 160,
+    detail: "Отмена крепостного права, суд присяжных, земства. Россия открывалась новым людям — и новым предпринимателям.",
+    accent: "rgba(201,162,39,0.35)",
   },
 ];
 
-// SVG-график населения
+/* ─── SVG: График населения ─── */
 function PopulationChart({ visible }: { visible: boolean }) {
-  const W = 300;
-  const H = 120;
-  const pad = { l: 8, r: 8, t: 12, b: 8 };
-
-  const minY = 30000;
-  const maxY = 54000;
-  const minX = 1863;
-  const maxX = 1897;
-
-  const toX = (year: number) =>
-    pad.l + ((year - minX) / (maxX - minX)) * (W - pad.l - pad.r);
-  const toY = (val: number) =>
-    pad.t + (1 - (val - minY) / (maxY - minY)) * (H - pad.t - pad.b);
-
-  const points = POPULATION_DATA.map((d) => ({ x: toX(d.year), y: toY(d.value) }));
-
-  const linePath = points
-    .map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`)
-    .join(" ");
-
-  const areaPath =
-    linePath +
-    ` L${points[points.length - 1].x.toFixed(1)},${(H - pad.b).toFixed(1)}` +
-    ` L${points[0].x.toFixed(1)},${(H - pad.b).toFixed(1)} Z`;
-
-  // Длина линии — приблизительная для dashoffset анимации
-  const lineLength = 340;
+  const W = 300; const H = 110;
+  const pad = { l: 6, r: 6, t: 10, b: 14 };
+  const minY = 30000; const maxY = 54000;
+  const minX = 1863; const maxX = 1897;
+  const toX = (y: number) => pad.l + ((y - minX) / (maxX - minX)) * (W - pad.l - pad.r);
+  const toY = (v: number) => pad.t + (1 - (v - minY) / (maxY - minY)) * (H - pad.t - pad.b);
+  const pts = POPULATION_DATA.map(d => ({ x: toX(d.year), y: toY(d.value) }));
+  const line = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
+  const area = line + ` L${pts[pts.length-1].x.toFixed(1)},${(H-pad.b).toFixed(1)} L${pts[0].x.toFixed(1)},${(H-pad.b).toFixed(1)} Z`;
 
   return (
-    <svg
-      viewBox={`0 0 ${W} ${H}`}
-      preserveAspectRatio="none"
-      style={{ width: "100%", height: "100%", overflow: "visible" }}
-    >
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ width:"100%", height:"100%", overflow:"visible" }}>
       <defs>
         <linearGradient id="popGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="rgba(201,162,39,0.35)" />
-          <stop offset="100%" stopColor="rgba(201,162,39,0.01)" />
+          <stop offset="0%" stopColor="rgba(201,162,39,0.4)" />
+          <stop offset="100%" stopColor="rgba(201,162,39,0.0)" />
         </linearGradient>
-        <filter id="glow">
-          <feGaussianBlur stdDeviation="2" result="blur" />
-          <feMerge>
-            <feMergeNode in="blur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
+        <filter id="lineGlow">
+          <feGaussianBlur stdDeviation="2.5" result="b" />
+          <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
         </filter>
       </defs>
-
-      {/* Горизонтальные сетки */}
-      {[0.25, 0.5, 0.75].map((t) => {
-        const y = pad.t + t * (H - pad.t - pad.b);
-        return (
-          <line
-            key={t}
-            x1={pad.l}
-            y1={y}
-            x2={W - pad.r}
-            y2={y}
-            stroke="rgba(255,255,255,0.05)"
-            strokeWidth="0.5"
-          />
-        );
-      })}
-
-      {/* Заливка */}
-      <path
-        d={areaPath}
-        fill="url(#popGrad)"
-        style={{
-          opacity: visible ? 1 : 0,
-          transition: "opacity 0.8s ease 0.4s",
-        }}
-      />
-
-      {/* Линия с анимацией */}
-      <path
-        d={linePath}
-        fill="none"
-        stroke="rgba(201,162,39,0.9)"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        filter="url(#glow)"
-        style={{
-          strokeDasharray: lineLength,
-          strokeDashoffset: visible ? 0 : lineLength,
-          transition: "stroke-dashoffset 1.2s cubic-bezier(0.4,0,0.2,1) 0.3s",
-        }}
-      />
-
-      {/* Точки */}
-      {points.map((p, i) => (
+      {[0.33, 0.66].map(t => (
+        <line key={t} x1={pad.l} y1={pad.t + t*(H-pad.t-pad.b)} x2={W-pad.r} y2={pad.t + t*(H-pad.t-pad.b)}
+          stroke="rgba(255,255,255,0.05)" strokeWidth="0.5" />
+      ))}
+      <path d={area} fill="url(#popGrad)" style={{ opacity: visible ? 1 : 0, transition: "opacity 0.8s ease 0.5s" }} />
+      <path d={line} fill="none" stroke="rgba(201,162,39,0.95)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+        filter="url(#lineGlow)"
+        style={{ strokeDasharray: 360, strokeDashoffset: visible ? 0 : 360, transition: "stroke-dashoffset 1.3s cubic-bezier(0.4,0,0.2,1) 0.3s" }} />
+      {pts.map((p, i) => (
         <g key={i}>
-          <circle
-            cx={p.x}
-            cy={p.y}
-            r={i === 1 ? 4.5 : 3}
-            fill={i === 1 ? "rgba(201,162,39,1)" : "rgba(201,162,39,0.7)"}
-            style={{
-              opacity: visible ? 1 : 0,
-              transition: `opacity 0.4s ease ${0.6 + i * 0.12}s`,
-            }}
-          />
-          {i === 1 && (
-            <circle
-              cx={p.x}
-              cy={p.y}
-              r={8}
-              fill="none"
-              stroke="rgba(201,162,39,0.3)"
-              strokeWidth="1"
-              style={{
-                opacity: visible ? 1 : 0,
-                transition: "opacity 0.4s ease 0.8s",
-              }}
-            />
-          )}
+          <circle cx={p.x} cy={p.y} r={i === 1 ? 5 : 3.5}
+            fill={i === 1 ? "rgba(201,162,39,1)" : "rgba(201,162,39,0.75)"}
+            filter={i === 1 ? "url(#lineGlow)" : undefined}
+            style={{ opacity: visible ? 1 : 0, transition: `opacity 0.3s ease ${0.7+i*0.1}s` }} />
+          {i === 1 && <circle cx={p.x} cy={p.y} r={9} fill="none" stroke="rgba(201,162,39,0.25)" strokeWidth="1"
+            style={{ opacity: visible ? 1 : 0, transition: "opacity 0.3s ease 0.9s" }} />}
         </g>
       ))}
-
-      {/* Подписи годов */}
       {POPULATION_DATA.map((d, i) => (
-        <text
-          key={d.year}
-          x={toX(d.year)}
-          y={H - 1}
-          textAnchor="middle"
-          fontSize="6"
-          fill="rgba(255,255,255,0.3)"
-          style={{
-            opacity: visible ? 1 : 0,
-            transition: `opacity 0.4s ease ${0.8 + i * 0.08}s`,
-          }}
-        >
+        <text key={d.year} x={toX(d.year)} y={H-1} textAnchor="middle" fontSize="6.5" fill="rgba(255,255,255,0.28)"
+          style={{ opacity: visible ? 1 : 0, transition: `opacity 0.3s ease ${0.9+i*0.08}s` }}>
           {d.year}
         </text>
       ))}
@@ -260,893 +114,401 @@ function PopulationChart({ visible }: { visible: boolean }) {
   );
 }
 
-// SVG-иконка самородка (простой многоугольник)
-function NuggetIcon() {
+/* ─── SVG: Бар-чарт золота ─── */
+function GoldChart({ visible }: { visible: boolean }) {
+  const max = 95;
   return (
-    <svg viewBox="0 0 48 48" width="40" height="40">
-      <polygon
-        points="16,8 32,6 42,18 40,34 28,44 14,42 6,30 8,16"
-        fill="rgba(201,162,39,0.25)"
-        stroke="rgba(201,162,39,0.8)"
-        strokeWidth="1.5"
-      />
-      <polygon
-        points="20,14 30,12 36,22 34,32 24,38 16,34 12,24 14,16"
-        fill="rgba(201,162,39,0.15)"
-        stroke="rgba(201,162,39,0.5)"
-        strokeWidth="1"
-      />
-      <circle cx="26" cy="20" r="2.5" fill="rgba(201,162,39,0.7)" />
-      <circle cx="20" cy="28" r="1.5" fill="rgba(201,162,39,0.5)" />
-    </svg>
+    <div style={{ display: "flex", alignItems: "flex-end", gap: "6px", height: "60px" }}>
+      {GOLD_DATA.map((d, i) => (
+        <div key={d.year} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
+          <div style={{
+            width: "100%",
+            height: `${(d.v / max) * 52}px`,
+            background: i === GOLD_DATA.length - 1
+              ? "linear-gradient(to top, rgba(201,162,39,0.9), rgba(201,162,39,0.5))"
+              : `linear-gradient(to top, rgba(201,162,39,${0.35 + i*0.08}), rgba(201,162,39,0.1))`,
+            borderRadius: "3px 3px 0 0",
+            boxShadow: i === GOLD_DATA.length - 1 ? "0 0 8px rgba(201,162,39,0.4)" : "none",
+            transition: `height 0.8s cubic-bezier(0.34,1.56,0.64,1) ${i * 80}ms`,
+            ...(visible ? {} : { height: "2px" }),
+          }} />
+          <span style={{ fontFamily: "monospace", fontSize: "5.5px", color: "rgba(255,255,255,0.25)", whiteSpace: "nowrap" }}>
+            {d.year}
+          </span>
+        </div>
+      ))}
+    </div>
   );
 }
 
-// SVG-иконка книги
-function BookIcon() {
+/* ─── SVG: Дорога (тракт) ─── */
+function TraktRoad({ visible }: { visible: boolean }) {
+  const len = 240;
   return (
-    <svg viewBox="0 0 40 40" width="32" height="32">
-      <rect x="6" y="8" width="26" height="26" rx="2" fill="rgba(201,162,39,0.1)" stroke="rgba(201,162,39,0.5)" strokeWidth="1.5" />
-      <line x1="19" y1="8" x2="19" y2="34" stroke="rgba(201,162,39,0.4)" strokeWidth="1" />
-      <line x1="10" y1="15" x2="17" y2="15" stroke="rgba(201,162,39,0.3)" strokeWidth="1" />
-      <line x1="10" y1="20" x2="17" y2="20" stroke="rgba(201,162,39,0.3)" strokeWidth="1" />
-      <line x1="10" y1="25" x2="17" y2="25" stroke="rgba(201,162,39,0.3)" strokeWidth="1" />
-      <line x1="21" y1="15" x2="30" y2="15" stroke="rgba(201,162,39,0.3)" strokeWidth="1" />
-      <line x1="21" y1="20" x2="30" y2="20" stroke="rgba(201,162,39,0.3)" strokeWidth="1" />
-      <line x1="21" y1="25" x2="30" y2="25" stroke="rgba(201,162,39,0.3)" strokeWidth="1" />
-    </svg>
-  );
-}
-
-// SVG мини-карта Транссиба
-function TranssibMap({ visible }: { visible: boolean }) {
-  // Точки: Москва(слева) → ... → Новосибирск → ... → Иркутск
-  // Томск — ответвление от линии
-  const lineLength = 200;
-  return (
-    <svg viewBox="0 0 240 80" style={{ width: "100%", height: "64px" }}>
+    <svg viewBox="0 0 240 52" style={{ width: "100%", height: "46px" }}>
       <defs>
-        <filter id="dotglow">
+        <filter id="roadGlow">
+          <feGaussianBlur stdDeviation="2" result="b" />
+          <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+        </filter>
+      </defs>
+      <path d="M10,40 Q120,18 230,40" fill="none" stroke="rgba(201,162,39,0.18)" strokeWidth="10" strokeLinecap="round"
+        style={{ strokeDasharray: len, strokeDashoffset: visible ? 0 : len, transition: "stroke-dashoffset 0.9s ease 0.3s" }} />
+      <path d="M10,40 Q120,18 230,40" fill="none" stroke="rgba(201,162,39,0.7)" strokeWidth="1.5"
+        filter="url(#roadGlow)" strokeLinecap="round"
+        style={{ strokeDasharray: len, strokeDashoffset: visible ? 0 : len, transition: "stroke-dashoffset 1.0s ease 0.3s" }} />
+      <path d="M10,40 Q120,18 230,40" fill="none" stroke="rgba(201,162,39,0.5)" strokeWidth="0.8" strokeDasharray="5 6" strokeLinecap="round"
+        style={{ opacity: visible ? 1 : 0, transition: "opacity 0.4s ease 0.9s" }} />
+      {[{ cx:10, cy:40, label:"Москва", anchor:"start" }, { cx:120, cy:24, label:"Томск", anchor:"middle" }, { cx:230, cy:40, label:"Иркутск", anchor:"end" }].map(c => (
+        <g key={c.label}>
+          <circle cx={c.cx} cy={c.cy} r={c.label === "Томск" ? 5 : 3.5}
+            fill={c.label === "Томск" ? "rgba(201,162,39,0.9)" : "rgba(201,162,39,0.45)"}
+            filter={c.label === "Томск" ? "url(#roadGlow)" : undefined}
+            style={{ opacity: visible ? 1 : 0, transition: "opacity 0.4s ease 0.8s" }} />
+          <text x={c.cx} y={c.label === "Томск" ? 14 : c.cy - 7} textAnchor={c.anchor as "start"|"middle"|"end"}
+            fontSize={c.label === "Томск" ? "8" : "6.5"}
+            fill={c.label === "Томск" ? "rgba(201,162,39,0.9)" : "rgba(255,255,255,0.35)"}
+            fontWeight={c.label === "Томск" ? "700" : "400"}
+            style={{ opacity: visible ? 1 : 0, transition: "opacity 0.4s ease 0.9s" }}>
+            {c.label}
+          </text>
+        </g>
+      ))}
+    </svg>
+  );
+}
+
+/* ─── SVG: Мини-карта Транссиба ─── */
+function TranssibMap({ visible }: { visible: boolean }) {
+  const len = 230;
+  return (
+    <svg viewBox="0 0 240 80" style={{ width: "100%", height: "66px" }}>
+      <defs>
+        <filter id="tglow">
           <feGaussianBlur stdDeviation="1.5" result="b" />
           <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
         </filter>
       </defs>
-      {/* Главная линия Транссиба */}
-      <line
-        x1="10" y1="42" x2="230" y2="42"
-        stroke="rgba(201,162,39,0.5)"
-        strokeWidth="2"
-        style={{
-          strokeDasharray: lineLength + 80,
-          strokeDashoffset: visible ? 0 : lineLength + 80,
-          transition: "stroke-dashoffset 1.0s ease 0.2s",
-        }}
-      />
-      {/* Ответвление к Томску — пунктир */}
-      <line
-        x1="145" y1="42" x2="145" y2="14"
-        stroke="rgba(201,162,39,0.4)"
-        strokeWidth="1.5"
-        strokeDasharray="3 3"
-        style={{
-          opacity: visible ? 1 : 0,
-          transition: "opacity 0.5s ease 0.9s",
-        }}
-      />
-      {/* Города: Москва */}
-      <circle cx="10" cy="42" r="3.5" fill="rgba(201,162,39,0.4)" filter="url(#dotglow)" />
-      <text x="12" y="56" fontSize="7" fill="rgba(255,255,255,0.4)">Москва</text>
-      {/* Новосибирск */}
-      <circle cx="145" cy="42" r="4.5" fill="rgba(201,162,39,0.7)" filter="url(#dotglow)" />
-      <text x="130" y="56" fontSize="7" fill="rgba(255,255,255,0.5)">Новосибирск</text>
-      {/* Иркутск */}
-      <circle cx="230" cy="42" r="3.5" fill="rgba(201,162,39,0.4)" filter="url(#dotglow)" />
-      <text x="210" y="56" fontSize="7" fill="rgba(255,255,255,0.4)">Иркутск</text>
-      {/* Томск */}
-      <circle
-        cx="145" cy="14" r="4"
-        fill="rgba(201,162,39,0.3)"
-        stroke="rgba(201,162,39,0.7)"
-        strokeWidth="1.5"
-        style={{ opacity: visible ? 1 : 0, transition: "opacity 0.4s ease 1.1s" }}
-      />
-      <text x="148" y="12" fontSize="7.5" fill="rgba(201,162,39,0.85)" fontWeight="600"
-        style={{ opacity: visible ? 1 : 0, transition: "opacity 0.4s ease 1.1s" }}
-      >
-        Томск
-      </text>
+      <line x1="10" y1="50" x2="230" y2="50" stroke="rgba(201,162,39,0.55)" strokeWidth="2"
+        filter="url(#tglow)"
+        style={{ strokeDasharray: len, strokeDashoffset: visible ? 0 : len, transition: "stroke-dashoffset 1.0s ease 0.2s" }} />
+      <line x1="148" y1="50" x2="148" y2="16" stroke="rgba(201,162,39,0.4)" strokeWidth="1.5" strokeDasharray="3.5 3"
+        style={{ opacity: visible ? 1 : 0, transition: "opacity 0.5s ease 0.95s" }} />
+      {[{ cx:10, cy:50, label:"Москва" }, { cx:230, cy:50, label:"Иркутск" }].map(c => (
+        <g key={c.label}>
+          <circle cx={c.cx} cy={c.cy} r={3.5} fill="rgba(201,162,39,0.4)" />
+          <text x={c.cx} y={c.cy + 11} textAnchor="middle" fontSize="6.5" fill="rgba(255,255,255,0.35)"
+            style={{ opacity: visible ? 1 : 0, transition: "opacity 0.4s ease 0.85s" }}>{c.label}</text>
+        </g>
+      ))}
+      <circle cx="148" cy="50" r="5" fill="rgba(201,162,39,0.65)" filter="url(#tglow)"
+        style={{ opacity: visible ? 1 : 0, transition: "opacity 0.4s ease 0.8s" }} />
+      <text x="152" y="63" fontSize="6.5" fill="rgba(255,255,255,0.45)"
+        style={{ opacity: visible ? 1 : 0, transition: "opacity 0.4s ease 0.85s" }}>Новосибирск</text>
+      <circle cx="148" cy="16" r="4.5" fill="rgba(201,162,39,0.3)" stroke="rgba(201,162,39,0.75)" strokeWidth="1.5"
+        style={{ opacity: visible ? 1 : 0, transition: "opacity 0.4s ease 1.05s" }} />
+      <text x="152" y="13" fontSize="7.5" fill="rgba(201,162,39,0.9)" fontWeight="600"
+        style={{ opacity: visible ? 1 : 0, transition: "opacity 0.4s ease 1.1s" }}>Томск</text>
     </svg>
   );
 }
 
-// SVG-дорога тракта
-function TraktRoad({ visible }: { visible: boolean }) {
-  const len = 220;
+/* ─── Стили ─── */
+const PANEL: React.CSSProperties = {
+  borderRadius: "18px",
+  border: "1px solid rgba(201,162,39,0.13)",
+  background: "linear-gradient(145deg, rgba(201,162,39,0.05) 0%, rgba(10,8,4,0.6) 100%)",
+  backdropFilter: "blur(6px)",
+  padding: "24px",
+  display: "flex",
+  flexDirection: "column",
+  gap: "14px",
+  transition: "transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease",
+  cursor: "default",
+};
+
+const PANEL_HOVER: React.CSSProperties = {
+  transform: "translateY(-6px)",
+  boxShadow: "0 16px 40px rgba(0,0,0,0.5), 0 0 24px rgba(201,162,39,0.12)",
+  borderColor: "rgba(201,162,39,0.35)",
+};
+
+const GOLD_GLOW: React.CSSProperties = {
+  fontFamily: "sans-serif",
+  fontWeight: 900,
+  color: "rgba(201,162,39,1)",
+  letterSpacing: "-0.03em",
+  lineHeight: 1,
+  textShadow: "0 0 20px rgba(201,162,39,0.45), 0 0 40px rgba(201,162,39,0.2)",
+};
+
+const LABEL: React.CSSProperties = {
+  fontFamily: "monospace",
+  fontSize: "9px",
+  letterSpacing: "0.42em",
+  textTransform: "uppercase" as const,
+  color: "rgba(201,162,39,0.6)",
+};
+
+const DETAIL: React.CSSProperties = {
+  fontFamily: "monospace",
+  fontSize: "10.5px",
+  color: "rgba(255,255,255,0.38)",
+  lineHeight: 1.6,
+  borderTop: "1px solid rgba(255,255,255,0.05)",
+  paddingTop: "10px",
+};
+
+function HoverPanel({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
+  const [hovered, setHovered] = useState(false);
   return (
-    <svg viewBox="0 0 240 50" style={{ width: "100%", height: "44px" }}>
-      {/* Обочины */}
-      <path
-        d="M10,38 Q120,20 230,38"
-        fill="none"
-        stroke="rgba(201,162,39,0.2)"
-        strokeWidth="8"
-        strokeLinecap="round"
-        style={{
-          strokeDasharray: len,
-          strokeDashoffset: visible ? 0 : len,
-          transition: "stroke-dashoffset 0.9s ease 0.3s",
-        }}
-      />
-      {/* Пунктир по центру */}
-      <path
-        d="M10,38 Q120,20 230,38"
-        fill="none"
-        stroke="rgba(201,162,39,0.6)"
-        strokeWidth="1"
-        strokeDasharray="6 5"
-        style={{
-          strokeDasharray: "6 5",
-          opacity: visible ? 1 : 0,
-          transition: "opacity 0.5s ease 0.8s",
-        }}
-      />
-      {/* Москва */}
-      <circle cx="10" cy="38" r="3" fill="rgba(201,162,39,0.5)" />
-      <text x="4" y="30" fontSize="6.5" fill="rgba(255,255,255,0.4)">Москва</text>
-      {/* Томск */}
-      <circle cx="120" cy="25" r="4" fill="rgba(201,162,39,0.8)" />
-      <text x="110" y="17" fontSize="7" fill="rgba(201,162,39,0.9)" fontWeight="600">Томск</text>
-      {/* Иркутск */}
-      <circle cx="230" cy="38" r="3" fill="rgba(201,162,39,0.5)" />
-      <text x="214" y="30" fontSize="6.5" fill="rgba(255,255,255,0.4)">Иркутск</text>
-    </svg>
+    <div
+      style={{ ...PANEL, ...style, ...(hovered ? PANEL_HOVER : {}) }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {children}
+    </div>
   );
 }
 
 export function WorldOf1876Section() {
-  const sectionReveal = useReveal(0.05);
+  const headerReveal = useReveal(0.1);
   const row1Reveal = useReveal(0.05);
   const row2Reveal = useReveal(0.05);
   const worldReveal = useReveal(0.05);
   const conclusionReveal = useReveal(0.05);
 
-  const panelBase: React.CSSProperties = {
-    background: "rgba(255,255,255,0.025)",
-    border: "1px solid rgba(201,162,39,0.12)",
-    borderRadius: "16px",
-    backdropFilter: "blur(4px)",
-  };
-
-  const panelDark: React.CSSProperties = {
-    background: "rgba(0,0,0,0.3)",
-    border: "1px solid rgba(255,255,255,0.06)",
-    borderRadius: "16px",
-  };
-
   return (
-    <section
-      id="world-1876"
-      style={{ background: "#080603", borderTop: "1px solid rgba(201,162,39,0.08)" }}
-      className="relative overflow-hidden"
-    >
+    <section id="world-1876" style={{ background: "#080603", borderTop: "1px solid rgba(201,162,39,0.08)" }} className="relative overflow-hidden">
       {/* Фоновый год */}
-      <div
-        className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden"
-        aria-hidden="true"
-      >
-        <span
-          style={{
-            fontWeight: 900,
-            fontSize: "32vw",
-            color: "rgba(255,255,255,0.012)",
-            lineHeight: 1,
-            letterSpacing: "-0.05em",
-            fontFamily: "sans-serif",
-          }}
-        >
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden" aria-hidden="true">
+        <span style={{ fontWeight: 900, fontSize: "32vw", color: "rgba(255,255,255,0.012)", lineHeight: 1, letterSpacing: "-0.05em", fontFamily: "sans-serif" }}>
           1876
         </span>
       </div>
 
-      <div
-        ref={sectionReveal.ref}
-        className="relative z-10 mx-auto"
-        style={{ maxWidth: "1400px", padding: "6rem 2.5rem 5rem" }}
-      >
-        {/* ── Заголовок секции ── */}
-        <div
-          style={{
-            marginBottom: "3rem",
-            opacity: sectionReveal.visible ? 1 : 0,
-            transform: sectionReveal.visible ? "translateY(0)" : "translateY(28px)",
-            transition: "opacity 0.8s ease, transform 0.8s ease",
-          }}
-        >
-          <p
-            style={{
-              fontFamily: "monospace",
-              fontSize: "10px",
-              letterSpacing: "0.45em",
-              color: "rgba(201,162,39,0.75)",
-              textTransform: "uppercase",
-              marginBottom: "1rem",
-            }}
-          >
-            Контекст · 1876 год
-          </p>
-          <h2
-            style={{
-              fontFamily: "sans-serif",
-              fontSize: "clamp(2.2rem, 5vw, 4rem)",
-              fontWeight: 900,
-              letterSpacing: "-0.04em",
-              color: "#f5f0e8",
-              lineHeight: 0.95,
-              marginBottom: "1.25rem",
-            }}
-          >
-            Томск<br />
-            <span style={{ color: "rgba(201,162,39,0.95)" }}>в зеркале</span> мира
+      <div className="relative z-10 mx-auto" style={{ maxWidth: "1400px", padding: "6rem 2.5rem 5rem" }}>
+
+        {/* ── Заголовок ── */}
+        <div ref={headerReveal.ref} style={{ marginBottom: "3rem", opacity: headerReveal.visible ? 1 : 0, transform: headerReveal.visible ? "none" : "translateY(28px)", transition: "opacity 0.8s ease, transform 0.8s ease" }}>
+          <p style={LABEL}>Контекст · 1876 год</p>
+          <h2 style={{ fontFamily: "sans-serif", fontSize: "clamp(2.2rem,5vw,4rem)", fontWeight: 900, letterSpacing: "-0.04em", color: "#f5f0e8", lineHeight: 0.95, margin: "1rem 0 1.25rem" }}>
+            Томск<br /><span style={{ color: "rgba(201,162,39,0.95)" }}>в зеркале</span> мира
           </h2>
-          <p
-            style={{
-              fontFamily: "sans-serif",
-              fontSize: "clamp(0.9rem, 1.5vw, 1.1rem)",
-              color: "rgba(255,255,255,0.45)",
-              maxWidth: "52ch",
-              lineHeight: 1.65,
-            }}
-          >
-            Карл Крюгер приехал не в «глухую Сибирь». Он выбрал Томск —
-            богатый, растущий, амбициозный торговый город. Вот каким был мир в 1876 году.
+          <p style={{ fontFamily: "sans-serif", fontSize: "clamp(0.9rem,1.5vw,1.1rem)", color: "rgba(255,255,255,0.5)", maxWidth: "52ch", lineHeight: 1.65 }}>
+            Карл Крюгер приехал не в «глухую Сибирь». Он выбрал Томск — богатый, растущий, амбициозный торговый город.
           </p>
         </div>
 
-        {/* ══════════════════════════════════════════════
-            СТРОКА 1 — Hero-панель + 2 маленькие
-        ══════════════════════════════════════════════ */}
-        <div
-          ref={row1Reveal.ref}
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: "16px",
-            marginBottom: "16px",
-            opacity: row1Reveal.visible ? 1 : 0,
-            transform: row1Reveal.visible ? "translateY(0)" : "translateY(32px)",
-            transition: "opacity 0.7s ease, transform 0.7s ease",
-          }}
-        >
-          {/* ── Hero: Население ── */}
-          <div
-            style={{
-              ...panelBase,
-              gridColumn: "1 / 2",
-              padding: "28px 28px 24px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "12px",
-              background: "rgba(201,162,39,0.04)",
-              border: "1px solid rgba(201,162,39,0.2)",
-            }}
-          >
-            <p
-              style={{
-                fontFamily: "monospace",
-                fontSize: "9px",
-                letterSpacing: "0.4em",
-                textTransform: "uppercase",
-                color: "rgba(201,162,39,0.6)",
-              }}
-            >
-              Население Томска
-            </p>
-            <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
-              <span
-                style={{
-                  fontFamily: "sans-serif",
-                  fontSize: "clamp(2rem, 3.5vw, 3rem)",
-                  fontWeight: 900,
-                  color: "rgba(201,162,39,1)",
-                  letterSpacing: "-0.03em",
-                  lineHeight: 1,
-                }}
-              >
-                ~33&nbsp;800
-              </span>
-              <span
-                style={{
-                  fontFamily: "sans-serif",
-                  fontSize: "0.8rem",
-                  color: "rgba(255,255,255,0.4)",
-                  fontWeight: 400,
-                }}
-              >
-                жителей в 1876
-              </span>
-            </div>
+        {/* ══ СТРОКА 1 — 3 панели ══ */}
+        <div ref={row1Reveal.ref} style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px", marginBottom: "16px" }}>
 
-            {/* SVG-график */}
+          {/* Население — hero */}
+          <HoverPanel style={{
+            background: "linear-gradient(145deg, rgba(201,162,39,0.07) 0%, rgba(8,6,3,0.8) 100%)",
+            border: "1px solid rgba(201,162,39,0.22)",
+            opacity: row1Reveal.visible ? 1 : 0,
+            transform: row1Reveal.visible ? "none" : "translateY(32px)",
+            transition: "opacity 0.6s ease 0ms, transform 0.6s ease 0ms, box-shadow 0.25s ease, border-color 0.25s ease",
+          }}>
+            <p style={LABEL}>Население Томска</p>
+            <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
+              <span style={{ ...GOLD_GLOW, fontSize: "clamp(1.8rem,3vw,2.6rem)" }}>~33&nbsp;800</span>
+              <span style={{ fontFamily: "sans-serif", fontSize: "0.8rem", color: "rgba(255,255,255,0.4)" }}>жителей в 1876</span>
+            </div>
             <div style={{ flex: 1, minHeight: "100px" }}>
               <PopulationChart visible={row1Reveal.visible} />
             </div>
+            <div style={DETAIL}>+54% за 17 лет · быстрее любой столицы</div>
+          </HoverPanel>
 
-            <div
-              style={{
-                fontFamily: "monospace",
-                fontSize: "10px",
-                color: "rgba(255,255,255,0.35)",
-                borderTop: "1px solid rgba(201,162,39,0.1)",
-                paddingTop: "10px",
-              }}
-            >
-              +54% за 17 лет · быстрее любой столицы
+          {/* Золото */}
+          <HoverPanel style={{
+            opacity: row1Reveal.visible ? 1 : 0,
+            transform: row1Reveal.visible ? "none" : "translateY(32px)",
+            transition: "opacity 0.6s ease 80ms, transform 0.6s ease 80ms, box-shadow 0.25s ease, border-color 0.25s ease",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <p style={LABEL}>Экономика</p>
+              {/* Бейдж */}
+              <span style={{ fontFamily: "monospace", fontSize: "9px", letterSpacing: "0.15em", background: "rgba(201,162,39,0.15)", border: "1px solid rgba(201,162,39,0.4)", borderRadius: "6px", padding: "2px 7px", color: "rgba(201,162,39,0.9)" }}>
+                1828
+              </span>
             </div>
-          </div>
-
-          {/* ── Маленькая: Золото ── */}
-          <div
-            style={{
-              ...panelBase,
-              padding: "24px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "14px",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <NuggetIcon />
-              <p
-                style={{
-                  fontFamily: "monospace",
-                  fontSize: "9px",
-                  letterSpacing: "0.35em",
-                  textTransform: "uppercase",
-                  color: "rgba(201,162,39,0.55)",
-                }}
-              >
-                Экономика
-              </p>
-            </div>
-            <p
-              style={{
-                fontFamily: "sans-serif",
-                fontSize: "clamp(1.1rem, 1.8vw, 1.5rem)",
-                fontWeight: 900,
-                color: "#f5f0e8",
-                letterSpacing: "-0.02em",
-                lineHeight: 1.1,
-              }}
-            >
+            <p style={{ fontFamily: "sans-serif", fontSize: "clamp(1.1rem,1.8vw,1.5rem)", fontWeight: 900, color: "#f5f0e8", letterSpacing: "-0.02em", lineHeight: 1.1 }}>
               Золотая<br />лихорадка
             </p>
-            <div
-              style={{
-                fontFamily: "monospace",
-                fontSize: "10px",
-                color: "rgba(255,255,255,0.35)",
-                lineHeight: 1.6,
-                borderTop: "1px solid rgba(255,255,255,0.06)",
-                paddingTop: "12px",
-              }}
-            >
-              1828 · Купцы Поповы<br />
-              Томск — финансовый центр<br />
-              Сибири
+            <GoldChart visible={row1Reveal.visible} />
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <svg viewBox="0 0 20 20" width="18" height="18">
+                <polygon points="8,2 14,2 18,8 16,16 10,18 4,16 2,10 4,4" fill="rgba(201,162,39,0.2)" stroke="rgba(201,162,39,0.7)" strokeWidth="1.2" />
+                <circle cx="11" cy="8" r="2" fill="rgba(201,162,39,0.7)" />
+              </svg>
+              <span style={{ fontFamily: "sans-serif", fontSize: "0.75rem", fontWeight: 700, color: "rgba(255,255,255,0.6)" }}>
+                Купцы Поповы · Енисей
+              </span>
             </div>
-          </div>
+            <div style={DETAIL}>Томск — финансовый центр всей сибирской золотодобычи</div>
+          </HoverPanel>
 
-          {/* ── Маленькая: Купцы ── */}
-          <div
-            style={{
-              ...panelBase,
-              padding: "24px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "14px",
-            }}
-          >
-            <p
-              style={{
-                fontFamily: "monospace",
-                fontSize: "9px",
-                letterSpacing: "0.35em",
-                textTransform: "uppercase",
-                color: "rgba(201,162,39,0.55)",
-              }}
-            >
-              Купцы 1-й гильдии
-            </p>
-            {/* Аватары-инициалы */}
-            <div style={{ display: "flex", gap: "8px" }}>
-              {["Г", "К", "А"].map((letter, i) => (
-                <div
-                  key={letter}
-                  style={{
-                    width: "40px",
-                    height: "40px",
-                    borderRadius: "50%",
-                    background:
-                      i === 0
-                        ? "rgba(201,162,39,0.2)"
-                        : i === 1
-                        ? "rgba(201,162,39,0.13)"
-                        : "rgba(201,162,39,0.08)",
-                    border: "1px solid rgba(201,162,39,0.35)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontFamily: "sans-serif",
-                    fontWeight: 700,
-                    fontSize: "1rem",
-                    color: "rgba(201,162,39,0.9)",
-                  }}
-                >
-                  {letter}
+          {/* Купцы */}
+          <HoverPanel style={{
+            opacity: row1Reveal.visible ? 1 : 0,
+            transform: row1Reveal.visible ? "none" : "translateY(32px)",
+            transition: "opacity 0.6s ease 160ms, transform 0.6s ease 160ms, box-shadow 0.25s ease, border-color 0.25s ease",
+          }}>
+            <p style={LABEL}>Купцы 1-й гильдии</p>
+            <div style={{ display: "flex", gap: "10px" }}>
+              {[
+                { l: "Г", name: "Гадалов", opacity: 0.25 },
+                { l: "К", name: "Кухтерин", opacity: 0.16 },
+                { l: "А", name: "Асташев", opacity: 0.1 },
+              ].map((c, i) => (
+                <div key={c.l} title={c.name} style={{
+                  width: "44px", height: "44px", borderRadius: "50%",
+                  background: `rgba(201,162,39,${c.opacity})`,
+                  border: `1.5px solid rgba(201,162,39,${0.5 - i*0.1})`,
+                  boxShadow: i === 0 ? "0 0 10px rgba(201,162,39,0.2)" : "none",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontFamily: "sans-serif", fontWeight: 800, fontSize: "1.05rem",
+                  color: "rgba(201,162,39,0.95)", cursor: "default",
+                }}>
+                  {c.l}
                 </div>
               ))}
             </div>
             <div>
-              <p
-                style={{
-                  fontFamily: "sans-serif",
-                  fontSize: "clamp(1rem, 1.6vw, 1.3rem)",
-                  fontWeight: 900,
-                  color: "rgba(201,162,39,1)",
-                  letterSpacing: "-0.02em",
-                  marginBottom: "4px",
-                }}
-              >
-                &gt;1 млн руб/год
-              </p>
-              <p
-                style={{
-                  fontFamily: "sans-serif",
-                  fontSize: "0.75rem",
-                  color: "rgba(255,255,255,0.5)",
-                }}
-              >
-                Гадалов · Кухтерин · Асташев
-              </p>
+              <p style={{ ...GOLD_GLOW, fontSize: "clamp(1rem,1.6vw,1.3rem)", marginBottom: "4px" }}>&gt;1 млн руб/год</p>
+              <p style={{ fontFamily: "sans-serif", fontSize: "0.75rem", color: "rgba(255,255,255,0.45)" }}>Гадалов · Кухтерин · Асташев</p>
             </div>
-            <p
-              style={{
-                fontFamily: "monospace",
-                fontSize: "9.5px",
-                color: "rgba(255,255,255,0.3)",
-                borderTop: "1px solid rgba(255,255,255,0.06)",
-                paddingTop: "10px",
-                lineHeight: 1.5,
-              }}
-            >
-              Платёжеспособная элита ·<br />им нужно хорошее пиво
-            </p>
-          </div>
+            <div style={DETAIL}>Платёжеспособная элита · им нужно хорошее пиво</div>
+          </HoverPanel>
         </div>
 
-        {/* ══════════════════════════════════════════════
-            СТРОКА 2 — 3 горизонтальные панели
-        ══════════════════════════════════════════════ */}
-        <div
-          ref={row2Reveal.ref}
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: "16px",
-            marginBottom: "32px",
+        {/* ══ СТРОКА 2 — 3 панели ══ */}
+        <div ref={row2Reveal.ref} style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px", marginBottom: "32px" }}>
+
+          {/* Транспорт */}
+          <HoverPanel style={{
             opacity: row2Reveal.visible ? 1 : 0,
-            transform: row2Reveal.visible ? "translateY(0)" : "translateY(28px)",
-            transition: "opacity 0.7s ease 0.1s, transform 0.7s ease 0.1s",
-          }}
-        >
-          {/* ── Московский тракт ── */}
-          <div
-            style={{
-              ...panelBase,
-              padding: "24px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "12px",
-            }}
-          >
-            <p
-              style={{
-                fontFamily: "monospace",
-                fontSize: "9px",
-                letterSpacing: "0.4em",
-                textTransform: "uppercase",
-                color: "rgba(201,162,39,0.55)",
-              }}
-            >
-              Транспорт
-            </p>
+            transform: row2Reveal.visible ? "none" : "translateY(28px)",
+            transition: "opacity 0.6s ease 0ms, transform 0.6s ease 0ms, box-shadow 0.25s ease, border-color 0.25s ease",
+          }}>
+            <p style={LABEL}>Транспорт</p>
             <TraktRoad visible={row2Reveal.visible} />
-            <p
-              style={{
-                fontFamily: "sans-serif",
-                fontSize: "clamp(1.4rem, 2vw, 1.8rem)",
-                fontWeight: 900,
-                color: "rgba(201,162,39,1)",
-                letterSpacing: "-0.03em",
-                lineHeight: 1,
-              }}
-            >
-              100 000+
-            </p>
-            <p
-              style={{
-                fontFamily: "sans-serif",
-                fontSize: "0.8rem",
-                color: "rgba(255,255,255,0.5)",
-                fontWeight: 600,
-              }}
-            >
-              ямщиков на тракте
-            </p>
-            <p
-              style={{
-                fontFamily: "monospace",
-                fontSize: "9.5px",
-                color: "rgba(255,255,255,0.3)",
-                borderTop: "1px solid rgba(255,255,255,0.06)",
-                paddingTop: "10px",
-                lineHeight: 1.5,
-              }}
-            >
-              Главный транспортный<br />узел Сибири
-            </p>
-          </div>
+            <p style={{ ...GOLD_GLOW, fontSize: "clamp(1.4rem,2vw,1.9rem)" }}>100&nbsp;000+</p>
+            <p style={{ fontFamily: "sans-serif", fontSize: "0.82rem", color: "rgba(255,255,255,0.55)", fontWeight: 600 }}>ямщиков на тракте</p>
+            <div style={DETAIL}>Главный транспортный узел Сибири</div>
+          </HoverPanel>
 
-          {/* ── Университет 1878 ── */}
-          <div
-            style={{
-              ...panelBase,
-              padding: "24px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "12px",
-              background: "rgba(201,162,39,0.03)",
-              border: "1px solid rgba(201,162,39,0.15)",
-            }}
-          >
+          {/* Образование */}
+          <HoverPanel style={{
+            background: "linear-gradient(145deg, rgba(201,162,39,0.06) 0%, rgba(8,6,3,0.8) 100%)",
+            border: "1px solid rgba(201,162,39,0.18)",
+            opacity: row2Reveal.visible ? 1 : 0,
+            transform: row2Reveal.visible ? "none" : "translateY(28px)",
+            transition: "opacity 0.6s ease 80ms, transform 0.6s ease 80ms, box-shadow 0.25s ease, border-color 0.25s ease",
+          }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <p
-                style={{
-                  fontFamily: "monospace",
-                  fontSize: "9px",
-                  letterSpacing: "0.4em",
-                  textTransform: "uppercase",
-                  color: "rgba(201,162,39,0.55)",
-                }}
-              >
-                Образование
-              </p>
-              <BookIcon />
+              <p style={LABEL}>Образование</p>
+              <span style={{ fontSize: "1.3rem" }}>🎓</span>
             </div>
-
-            {/* Большой год как акцент */}
             <div style={{ position: "relative" }}>
-              <span
-                style={{
-                  fontFamily: "sans-serif",
-                  fontSize: "clamp(3rem, 5vw, 4.5rem)",
-                  fontWeight: 900,
-                  color: "rgba(201,162,39,0.15)",
-                  letterSpacing: "-0.05em",
-                  lineHeight: 1,
-                  position: "absolute",
-                  top: "-8px",
-                  left: "-4px",
-                  pointerEvents: "none",
-                  userSelect: "none",
-                }}
-              >
+              <span aria-hidden="true" style={{ position: "absolute", top: "-6px", left: "-4px", fontFamily: "sans-serif", fontWeight: 900, fontSize: "clamp(3rem,5vw,4.5rem)", color: "rgba(201,162,39,0.13)", letterSpacing: "-0.05em", lineHeight: 1, pointerEvents: "none", userSelect: "none" }}>
                 1878
               </span>
-              <p
-                style={{
-                  fontFamily: "sans-serif",
-                  fontSize: "clamp(1.2rem, 1.8vw, 1.6rem)",
-                  fontWeight: 900,
-                  color: "#f5f0e8",
-                  letterSpacing: "-0.02em",
-                  lineHeight: 1.15,
-                  position: "relative",
-                  paddingTop: "clamp(2.5rem, 3vw, 3.5rem)",
-                }}
-              >
+              <p style={{ fontFamily: "sans-serif", fontSize: "clamp(1.1rem,1.8vw,1.5rem)", fontWeight: 900, color: "#f5f0e8", letterSpacing: "-0.02em", lineHeight: 1.15, position: "relative", paddingTop: "clamp(2.4rem,3vw,3.2rem)" }}>
                 Первый университет<br />за Уралом
               </p>
             </div>
-
-            <p
-              style={{
-                fontFamily: "monospace",
-                fontSize: "9.5px",
-                color: "rgba(255,255,255,0.35)",
-                lineHeight: 1.6,
-              }}
-            >
-              Купцы дали 400 000 ₽<br />на строительство
+            <p style={{ fontFamily: "monospace", fontSize: "10px", color: "rgba(255,255,255,0.38)", lineHeight: 1.6 }}>
+              Купцы дали 400&nbsp;000 ₽ на строительство
             </p>
-            <p
-              style={{
-                fontFamily: "monospace",
-                fontSize: "8.5px",
-                color: "rgba(201,162,39,0.45)",
-                borderTop: "1px solid rgba(201,162,39,0.1)",
-                paddingTop: "8px",
-              }}
-            >
+            <p style={{ fontFamily: "monospace", fontSize: "9px", color: "rgba(201,162,39,0.5)", borderTop: "1px solid rgba(201,162,39,0.1)", paddingTop: "8px" }}>
               Александр II · указ 1878
             </p>
-          </div>
+          </HoverPanel>
 
-          {/* ── Транссиб обошёл Томск ── */}
-          <div
-            style={{
-              ...panelBase,
-              padding: "24px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "12px",
-            }}
-          >
-            <p
-              style={{
-                fontFamily: "monospace",
-                fontSize: "9px",
-                letterSpacing: "0.4em",
-                textTransform: "uppercase",
-                color: "rgba(201,162,39,0.55)",
-              }}
-            >
-              Инфраструктура
-            </p>
+          {/* Инфраструктура */}
+          <HoverPanel style={{
+            opacity: row2Reveal.visible ? 1 : 0,
+            transform: row2Reveal.visible ? "none" : "translateY(28px)",
+            transition: "opacity 0.6s ease 160ms, transform 0.6s ease 160ms, box-shadow 0.25s ease, border-color 0.25s ease",
+          }}>
+            <p style={LABEL}>Инфраструктура</p>
             <TranssibMap visible={row2Reveal.visible} />
-            <p
-              style={{
-                fontFamily: "sans-serif",
-                fontSize: "clamp(0.95rem, 1.4vw, 1.15rem)",
-                fontWeight: 900,
-                color: "#f5f0e8",
-                letterSpacing: "-0.02em",
-                lineHeight: 1.2,
-              }}
-            >
+            <p style={{ fontFamily: "sans-serif", fontSize: "clamp(0.9rem,1.3vw,1.1rem)", fontWeight: 900, color: "#f5f0e8", letterSpacing: "-0.02em", lineHeight: 1.2 }}>
               Транссиб обошёл Томск
             </p>
-            <p
-              style={{
-                fontFamily: "monospace",
-                fontSize: "9.5px",
-                color: "rgba(255,255,255,0.35)",
-                lineHeight: 1.55,
-              }}
-            >
-              100-вёрстная ветка<br />1896 · Мост дешевле в Новосибирске
+            <p style={{ fontFamily: "monospace", fontSize: "10px", color: "rgba(255,255,255,0.38)", lineHeight: 1.55 }}>
+              100-вёрстная ветка · 1896<br />Мост дешевле построили в Новосибирске
             </p>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                borderTop: "1px solid rgba(255,255,255,0.06)",
-                paddingTop: "8px",
-              }}
-            >
-              <span
-                style={{
-                  display: "inline-block",
-                  width: "20px",
-                  height: "1px",
-                  background: "rgba(201,162,39,0.5)",
-                }}
-              />
-              <span
-                style={{
-                  display: "inline-block",
-                  width: "20px",
-                  height: "0",
-                  borderTop: "1px dashed rgba(201,162,39,0.4)",
-                }}
-              />
-              <span
-                style={{
-                  fontFamily: "monospace",
-                  fontSize: "8.5px",
-                  color: "rgba(255,255,255,0.25)",
-                }}
-              >
-                Транссиб · ветка к Томску
-              </span>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "8px" }}>
+              <span style={{ display: "inline-block", width: "18px", height: "2px", background: "rgba(201,162,39,0.55)", borderRadius: "1px" }} />
+              <span style={{ display: "inline-block", width: "18px", borderTop: "1.5px dashed rgba(201,162,39,0.4)" }} />
+              <span style={{ fontFamily: "monospace", fontSize: "8.5px", color: "rgba(255,255,255,0.22)" }}>Транссиб · ветка к Томску</span>
             </div>
-          </div>
+          </HoverPanel>
         </div>
 
-        {/* ══════════════════════════════════════════════
-            СТРОКА 3 — Мировой контекст
-        ══════════════════════════════════════════════ */}
-        <div
-          ref={worldReveal.ref}
-          style={{
-            opacity: worldReveal.visible ? 1 : 0,
-            transform: worldReveal.visible ? "translateY(0)" : "translateY(24px)",
-            transition: "opacity 0.7s ease 0.05s, transform 0.7s ease 0.05s",
-          }}
-        >
-          {/* Разделитель */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "16px",
-              marginBottom: "16px",
-            }}
-          >
-            <div style={{ flex: 1, height: "1px", background: "rgba(201,162,39,0.12)" }} />
-            <span
-              style={{
-                fontFamily: "monospace",
-                fontSize: "9px",
-                letterSpacing: "0.5em",
-                color: "rgba(255,255,255,0.2)",
-                textTransform: "uppercase",
-                whiteSpace: "nowrap",
-              }}
-            >
-              ——— МИР В 1876 ———
+        {/* ══ СТРОКА 3 — Мировой контекст ══ */}
+        <div ref={worldReveal.ref} style={{ opacity: worldReveal.visible ? 1 : 0, transform: worldReveal.visible ? "none" : "translateY(24px)", transition: "opacity 0.7s ease, transform 0.7s ease" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "16px" }}>
+            <div style={{ flex: 1, height: "1px", background: "rgba(201,162,39,0.14)" }} />
+            <span style={{ fontFamily: "monospace", fontSize: "9px", letterSpacing: "0.55em", color: "rgba(255,255,255,0.22)", textTransform: "uppercase", whiteSpace: "nowrap" }}>
+              МИР В 1876
             </span>
-            <div style={{ flex: 1, height: "1px", background: "rgba(201,162,39,0.12)" }} />
+            <div style={{ flex: 1, height: "1px", background: "rgba(201,162,39,0.14)" }} />
           </div>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(3, 1fr)",
-              gap: "16px",
-            }}
-          >
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px" }}>
             {WORLD_CARDS.map((card, i) => (
-              <div
-                key={card.year}
-                style={{
-                  ...panelDark,
-                  padding: "24px 24px 24px 28px",
-                  borderLeft: `3px solid rgba(201,162,39,${0.6 - i * 0.15})`,
-                  borderRadius: "0 12px 12px 0",
-                  position: "relative",
-                  overflow: "hidden",
-                  opacity: worldReveal.visible ? 1 : 0,
-                  transform: worldReveal.visible ? "translateY(0)" : "translateY(20px)",
-                  transition: `opacity 0.6s ease ${card.delay}ms, transform 0.6s ease ${card.delay}ms`,
-                }}
-              >
-                {/* Год как фоновый элемент */}
-                <span
-                  aria-hidden="true"
-                  style={{
-                    position: "absolute",
-                    bottom: "-10px",
-                    right: "-4px",
-                    fontFamily: "sans-serif",
-                    fontWeight: 900,
-                    fontSize: "4.5rem",
-                    color: "rgba(201,162,39,0.06)",
-                    letterSpacing: "-0.05em",
-                    lineHeight: 1,
-                    pointerEvents: "none",
-                    userSelect: "none",
-                  }}
-                >
-                  {card.year.split("–")[0].split("–")[0]}
+              <HoverPanel key={card.year} style={{
+                background: "rgba(0,0,0,0.35)",
+                border: "1px solid rgba(255,255,255,0.06)",
+                borderLeft: `3px solid ${card.accent}`,
+                borderRadius: "0 14px 14px 0",
+                position: "relative",
+                overflow: "hidden",
+                padding: "24px 24px 24px 26px",
+                opacity: worldReveal.visible ? 1 : 0,
+                transform: worldReveal.visible ? "none" : "translateY(20px)",
+                transition: `opacity 0.6s ease ${i*80}ms, transform 0.6s ease ${i*80}ms, box-shadow 0.25s ease, border-color 0.25s ease`,
+              }}>
+                <span aria-hidden="true" style={{ position: "absolute", bottom: "-12px", right: "-4px", fontFamily: "sans-serif", fontWeight: 900, fontSize: "5rem", color: "rgba(201,162,39,0.07)", letterSpacing: "-0.05em", lineHeight: 1, pointerEvents: "none", userSelect: "none" }}>
+                  {card.yearShort}
                 </span>
-
-                <p
-                  style={{
-                    fontFamily: "monospace",
-                    fontSize: "9px",
-                    letterSpacing: "0.35em",
-                    textTransform: "uppercase",
-                    color: "rgba(201,162,39,0.55)",
-                    marginBottom: "8px",
-                  }}
-                >
-                  {card.year}
-                </p>
-                <p
-                  style={{
-                    fontFamily: "sans-serif",
-                    fontSize: "0.95rem",
-                    fontWeight: 700,
-                    color: "rgba(255,255,255,0.75)",
-                    marginBottom: "10px",
-                    lineHeight: 1.3,
-                  }}
-                >
-                  {card.label}
-                </p>
-                <p
-                  style={{
-                    fontFamily: "monospace",
-                    fontSize: "10px",
-                    color: "rgba(255,255,255,0.3)",
-                    lineHeight: 1.6,
-                  }}
-                >
-                  {card.detail}
-                </p>
-              </div>
+                <p style={{ fontFamily: "monospace", fontSize: "9px", letterSpacing: "0.38em", textTransform: "uppercase", color: "rgba(201,162,39,0.6)", marginBottom: "8px" }}>{card.year}</p>
+                <p style={{ fontFamily: "sans-serif", fontSize: "1rem", fontWeight: 700, color: "rgba(255,255,255,0.85)", marginBottom: "10px", lineHeight: 1.3 }}>{card.label}</p>
+                <p style={{ fontFamily: "monospace", fontSize: "10.5px", color: "rgba(255,255,255,0.38)", lineHeight: 1.65 }}>{card.detail}</p>
+              </HoverPanel>
             ))}
           </div>
         </div>
 
-        {/* ══════════════════════════════════════════════
-            СТРОКА 4 — Итоговый вывод
-        ══════════════════════════════════════════════ */}
-        <div
-          ref={conclusionReveal.ref}
-          style={{
-            marginTop: "28px",
-            padding: "clamp(1.5rem, 3vw, 2.5rem) clamp(1.5rem, 3vw, 2.5rem)",
-            background:
-              "linear-gradient(135deg, rgba(201,162,39,0.07), rgba(201,162,39,0.02))",
-            border: "1px solid rgba(201,162,39,0.18)",
-            borderRadius: "16px",
-            position: "relative",
-            overflow: "hidden",
-            opacity: conclusionReveal.visible ? 1 : 0,
-            transition: "opacity 0.9s ease 0.2s",
-          }}
-        >
-          {/* Кавычка-акцент */}
-          <span
-            aria-hidden="true"
-            style={{
-              position: "absolute",
-              top: "-20px",
-              left: "16px",
-              fontFamily: "Georgia, serif",
-              fontSize: "8rem",
-              color: "rgba(201,162,39,0.08)",
-              lineHeight: 1,
-              pointerEvents: "none",
-              userSelect: "none",
-            }}
-          >
-            "
-          </span>
-          <p
-            style={{
-              fontFamily: "monospace",
-              fontSize: "9px",
-              letterSpacing: "0.4em",
-              textTransform: "uppercase",
-              color: "rgba(201,162,39,0.55)",
-              marginBottom: "14px",
-            }}
-          >
-            Вывод
-          </p>
-          <p
-            style={{
-              fontFamily: "sans-serif",
-              fontSize: "clamp(0.95rem, 1.6vw, 1.2rem)",
-              color: "rgba(255,255,255,0.75)",
-              lineHeight: 1.7,
-              maxWidth: "72ch",
-            }}
-          >
+        {/* ══ СТРОКА 4 — Вывод ══ */}
+        <div ref={conclusionReveal.ref} style={{
+          marginTop: "28px",
+          padding: "clamp(1.5rem,3vw,2.5rem)",
+          background: "linear-gradient(135deg, rgba(201,162,39,0.08), rgba(201,162,39,0.02))",
+          border: "1px solid rgba(201,162,39,0.2)",
+          borderRadius: "16px",
+          position: "relative",
+          overflow: "hidden",
+          opacity: conclusionReveal.visible ? 1 : 0,
+          transition: "opacity 0.9s ease 0.2s",
+        }}>
+          <span aria-hidden="true" style={{ position: "absolute", top: "-24px", left: "14px", fontFamily: "Georgia, serif", fontSize: "9rem", color: "rgba(201,162,39,0.09)", lineHeight: 1, pointerEvents: "none", userSelect: "none" }}>"</span>
+          <p style={{ fontFamily: "monospace", fontSize: "9px", letterSpacing: "0.42em", textTransform: "uppercase", color: "rgba(201,162,39,0.6)", marginBottom: "14px" }}>Вывод</p>
+          <p style={{ fontFamily: "sans-serif", fontSize: "clamp(0.95rem,1.6vw,1.2rem)", color: "rgba(255,255,255,0.78)", lineHeight: 1.7, maxWidth: "72ch" }}>
             В 1876 году Томск был{" "}
-            <strong style={{ color: "#f5f0e8", fontWeight: 800 }}>
-              богатым, растущим городом
-            </strong>{" "}
+            <strong style={{ color: "#f5f0e8", fontWeight: 800 }}>богатым, растущим городом</strong>{" "}
             с платёжеспособной элитой и отсутствием нормального местного пива.{" "}
-            <span style={{ color: "rgba(201,162,39,0.85)" }}>
-              Крюгер увидел это раньше других.
-            </span>
+            <span style={{ color: "rgba(201,162,39,0.9)" }}>Крюгер увидел это раньше других.</span>
           </p>
         </div>
+
       </div>
     </section>
   );
