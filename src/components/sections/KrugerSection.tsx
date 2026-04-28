@@ -279,29 +279,19 @@ function EmberLine({ count = 18, side = "top" }: { count?: number; side?: "top" 
 
 /* ── Мини-таймлайн ── */
 interface TimelineItem { year: string; text: string; icon: string; }
-function MiniTimeline({ items, visible }: { items: TimelineItem[]; visible: boolean }) {
+function MiniTimeline({ items }: { items: TimelineItem[] }) {
   return (
     <div className="relative flex flex-col gap-0">
-      {/* Вертикальная линия */}
-      <div className="absolute left-[17px] top-3 bottom-3 w-px" style={{ background: "rgba(201,162,39,0.15)" }} />
-      {items.map((item, i) => (
-        <div
-          key={item.year}
-          className="flex items-start gap-4 py-2"
-          style={{
-            opacity: visible ? 1 : 0,
-            transform: visible ? "translateX(0)" : "translateX(-16px)",
-            transition: `opacity .5s ease ${i * 120}ms, transform .5s ease ${i * 120}ms`,
-          }}
-        >
-          {/* Иконка/точка */}
-          <div className="relative shrink-0 w-9 h-9 flex items-center justify-center rounded-full text-sm z-10"
+      <div className="absolute left-[19px] top-3 bottom-3 w-px" style={{ background: "rgba(201,162,39,0.15)" }} />
+      {items.map((item) => (
+        <div key={item.year} className="flex items-start gap-4 py-2.5">
+          <div className="relative shrink-0 w-10 h-10 flex items-center justify-center rounded-full text-base z-10"
             style={{ background: "rgba(201,162,39,0.08)", border: "1px solid rgba(201,162,39,0.2)" }}>
             {item.icon}
           </div>
-          <div className="pt-1.5">
-            <p className="font-mono text-[10px] text-accent/70 leading-none mb-1">{item.year}</p>
-            <p className="font-mono text-[10px] text-muted/70 leading-snug">{item.text}</p>
+          <div className="pt-2">
+            <p className="font-mono text-[11px] text-accent/80 leading-none mb-1 font-semibold">{item.year}</p>
+            <p className="font-mono text-[11px] text-muted/70 leading-snug">{item.text}</p>
           </div>
         </div>
       ))}
@@ -377,21 +367,21 @@ export function KrugerSection() {
             {/* Таймлайн + Портрет Карла */}
             <div className="flex flex-col lg:flex-row gap-5 items-start shrink-0">
               {/* Мини-таймлайн */}
-              <div ref={karlTl.ref} className="card-surface px-4 py-5 rounded-2xl min-w-[220px]">
-                <p className="font-mono text-[9px] tracking-[0.35em] text-accent/50 uppercase mb-3">Хронология</p>
-                <MiniTimeline items={KARL_TIMELINE} visible={karlTl.visible} />
+              <div ref={karlTl.ref} className="card-surface px-5 py-6 rounded-2xl w-[300px]">
+                <p className="font-mono text-[10px] tracking-[0.35em] text-accent/60 uppercase mb-4">Хронология</p>
+                <MiniTimeline items={KARL_TIMELINE} />
               </div>
 
               {/* Портрет Карла */}
-              <div className="shrink-0 w-[180px] md:w-[200px]">
+              <div className="shrink-0 w-[220px] md:w-[260px]">
                 <div className="relative overflow-hidden rounded-2xl group" style={{ aspectRatio: "3/4" }}>
-                  <img src={`${B}/history/karl-portrait.jpg`} alt="Карл Крюгер" loading="lazy" decoding="async"
+                  <img src={`${B}/history/karl-portrait.jpg`} alt="Карл Крюгер" loading="eager" decoding="async"
                     className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105" />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#080603]/90 via-transparent to-transparent" />
                   <div className="absolute bottom-4 left-4">
-                    <p className="font-mono text-[8px] tracking-[0.3em] text-accent uppercase mb-1">Основатель</p>
-                    <p className="font-sans text-sm font-black text-white">Карл Крюгер</p>
-                    <p className="font-mono text-[9px] text-white/40">1834–1884</p>
+                    <p className="font-mono text-[9px] tracking-[0.3em] text-accent uppercase mb-1">Основатель</p>
+                    <p className="font-sans text-base font-black text-white">Карл Крюгер</p>
+                    <p className="font-mono text-[10px] text-white/40">1834–1884</p>
                   </div>
                 </div>
               </div>
@@ -471,21 +461,21 @@ export function KrugerSection() {
             {/* Таймлайн + Портрет Роберта */}
             <div className="flex flex-col lg:flex-row gap-5 items-start shrink-0">
               {/* Мини-таймлайн */}
-              <div ref={robertTl.ref} className="card-surface px-4 py-5 rounded-2xl min-w-[220px]">
-                <p className="font-mono text-[9px] tracking-[0.35em] text-accent/50 uppercase mb-3">Хронология</p>
-                <MiniTimeline items={ROBERT_TIMELINE} visible={robertTl.visible} />
+              <div ref={robertTl.ref} className="card-surface px-5 py-6 rounded-2xl w-[300px]">
+                <p className="font-mono text-[10px] tracking-[0.35em] text-accent/60 uppercase mb-4">Хронология</p>
+                <MiniTimeline items={ROBERT_TIMELINE} />
               </div>
 
               {/* Портрет Роберта */}
-              <div className="shrink-0 w-[180px] md:w-[200px]">
+              <div className="shrink-0 w-[220px] md:w-[260px]">
                 <div className="relative overflow-hidden rounded-2xl group" style={{ aspectRatio: "3/4" }}>
-                  <img src={`${B}/history/robert-portrait.jpg`} alt="Роберт Крюгер" loading="lazy" decoding="async"
+                  <img src={`${B}/history/robert-portrait.jpg`} alt="Роберт Крюгер" loading="eager" decoding="async"
                     className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105" />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#080603]/90 via-transparent to-transparent" />
                   <div className="absolute bottom-4 left-4">
-                    <p className="font-mono text-[8px] tracking-[0.3em] text-accent uppercase mb-1">Золотой век</p>
-                    <p className="font-sans text-sm font-black text-white">Роберт Крюгер</p>
-                    <p className="font-mono text-[9px] text-white/40">1890–1914</p>
+                    <p className="font-mono text-[9px] tracking-[0.3em] text-accent uppercase mb-1">Золотой век</p>
+                    <p className="font-sans text-base font-black text-white">Роберт Крюгер</p>
+                    <p className="font-mono text-[10px] text-white/40">1890–1914</p>
                   </div>
                 </div>
               </div>
