@@ -39,3 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# heavy media — store separately (CDN/R2)
+*.mp4
+*.mov
+*.avi
+/public/scenes/
+/public/frames2_backup/
