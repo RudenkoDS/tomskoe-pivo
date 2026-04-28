@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { CINE_FRAME_COUNT, cineFramePath, BEATS } from "@/lib/cinematic";
+import { useAudio } from "@/lib/audioContext";
 
 export function CinematicReveal() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -15,7 +16,10 @@ export function CinematicReveal() {
   const [readyToShow, setReadyToShow] = useState(false);
   const [loadProgress, setLoadProgress] = useState(0);
   const [visibleBeats, setVisibleBeats] = useState<string[]>([]);
-  const [audioEnabled, setAudioEnabled] = useState(false);
+
+  const { muted } = useAudio();
+  const mutedRef = useRef(muted);
+  useEffect(() => { mutedRef.current = muted; }, [muted]);
 
   useEffect(() => {
     let done = 0;
@@ -102,9 +106,9 @@ export function CinematicReveal() {
 
         // Аудио: плавное появление/затухание по прогрессу секции
         const audio = audioRef.current;
-        if (audio && audioEnabled) {
+        if (audio) {
           const inView = progress > 0 && progress < 1;
-          if (inView) {
+          if (inView && !mutedRef.current) {
             if (audio.paused) audio.play().catch(() => {});
             const vol = progress < 0.1 ? progress / 0.1 : progress > 0.9 ? (1 - progress) / 0.1 : 1;
             audio.volume = Math.min(0.7, vol * 0.7);
@@ -202,28 +206,6 @@ export function CinematicReveal() {
         <div className="absolute top-20 left-8 md:left-16 font-mono text-[10px] tracking-[0.3em] text-muted/60 uppercase">
           Эпизод 01 из 06 · На основе архивных материалов
         </div>
-
-        {/* Кнопка звука — верхний правый */}
-        <button
-          onClick={() => {
-            const next = !audioEnabled;
-            setAudioEnabled(next);
-            const audio = audioRef.current;
-            if (!audio) return;
-            if (next) {
-              audio.play().catch(() => {});
-              audio.volume = 0.5;
-            } else {
-              audio.pause();
-            }
-          }}
-          className="absolute top-20 right-6 md:right-16 flex items-center gap-2 font-mono text-[10px] tracking-[0.2em] uppercase text-muted/60 hover:text-accent transition-colors group"
-        >
-          <span className="w-7 h-7 rounded-full border border-white/15 group-hover:border-accent/40 bg-black/30 backdrop-blur-sm flex items-center justify-center transition-colors text-xs">
-            {audioEnabled ? "♪" : "🔇"}
-          </span>
-          {audioEnabled ? "Звук вкл" : "Звук"}
-        </button>
 
         {/* Progress bar */}
         <div className="absolute bottom-0 left-0 right-0 h-px bg-white/5 origin-left">

@@ -9,10 +9,11 @@ import { Timeline } from "@/components/sections/Timeline";
 import { AlexandraSection } from "@/components/sections/AlexandraSection";
 import { BrandSection } from "@/components/sections/BrandSection";
 import { Footer } from "@/components/sections/Footer";
+import { ClientLayout } from "@/components/ClientLayout";
 
 export default function Home() {
   return (
-    <>
+    <ClientLayout>
       <Navbar />
       <main>
         {/* Экран 1: Hero — scroll-анимация "Финал Заставка для сайта + щит" */}
@@ -35,6 +36,6 @@ export default function Home() {
         <BrandSection />
       </main>
       <Footer />
-    </>
+    </ClientLayout>
   );
 }

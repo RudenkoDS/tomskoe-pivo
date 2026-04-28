@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { FRAME_COUNT, framePath, DIALOGUES } from "@/lib/hero";
+import { useAudio } from "@/lib/audioContext";
 
 const EPOCHS = [
   { year: "1876", label: "ОСНОВАНИЕ", anchor: "#karl" },
@@ -27,18 +28,9 @@ export function Hero() {
   const [loadProgress, setLoadProgress] = useState(0);
   const [visibleCards, setVisibleCards] = useState<string[]>([]);
   const [modalVideo, setModalVideo] = useState<string | null>(null);
-  const [audioEnabled, setAudioEnabled] = useState(false);
   const modalVideoRef = useRef<HTMLVideoElement>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Инициализация аудио
-  useEffect(() => {
-    const audio = new Audio(`${process.env.NEXT_PUBLIC_BASE ?? ""}/audio/hero.aac`);
-    audio.loop = true;
-    audio.volume = 0;
-    audioRef.current = audio;
-    return () => { audio.pause(); audio.src = ""; };
-  }, []);
+  const { muted, setMuted } = useAudio();
 
   useEffect(() => {
     let done = 0;
@@ -121,19 +113,6 @@ export function Hero() {
         const nowKey = [...nowIds].sort().join(",");
         const prevKey = [...visibleCards].sort().join(",");
         if (nowKey !== prevKey) setVisibleCards(nowIds);
-
-        // Аудио: плавное затухание к концу секции
-        const audio = audioRef.current;
-        if (audio && audioEnabled) {
-          const inView = progress >= 0 && progress < 1;
-          if (inView) {
-            if (audio.paused) audio.play().catch(() => {});
-            const vol = progress > 0.85 ? (1 - progress) / 0.15 : 1;
-            audio.volume = Math.min(0.6, vol * 0.6);
-          } else {
-            audio.pause();
-          }
-        }
 
         tickingRef.current = false;
       });
@@ -313,26 +292,15 @@ export function Hero() {
           </div>
         )}
 
-        {/* ── Кнопка звука ── */}
+        {/* ── Кнопка звука — управляет звуком второго экрана ── */}
         <button
-          onClick={() => {
-            const next = !audioEnabled;
-            setAudioEnabled(next);
-            const audio = audioRef.current;
-            if (!audio) return;
-            if (next) {
-              audio.play().catch(() => {});
-              audio.volume = 0.5;
-            } else {
-              audio.pause();
-            }
-          }}
+          onClick={() => setMuted(!muted)}
           className="absolute top-20 right-6 md:right-14 flex items-center gap-2 font-mono text-[10px] tracking-[0.2em] uppercase text-muted/60 hover:text-accent transition-colors group z-10"
         >
           <span className="w-7 h-7 rounded-full border border-white/15 group-hover:border-accent/40 bg-black/30 backdrop-blur-sm flex items-center justify-center transition-colors text-xs">
-            {audioEnabled ? "♪" : "🔇"}
+            {muted ? "🔇" : "♪"}
           </span>
-          {audioEnabled ? "Звук вкл" : "Звук"}
+          {muted ? "Без звука" : "Звук вкл"}
         </button>
 
         {/* ── Progress bar ── */}

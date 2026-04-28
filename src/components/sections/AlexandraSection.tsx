@@ -206,11 +206,6 @@ function AlexandraVideo() {
   );
 }
 
-// Координаты Александры на фото (женщина справа) — в % от размера фото
-// Семья Роберта: он сидит в центре, Александра — женщина стоит справа
-const ALEKSANDRA_X = 78; // % from left
-const ALEKSANDRA_Y = 28; // % from top
-
 function FamilyPhoto() {
   const [hovered, setHovered] = useState(false);
   return (
@@ -225,43 +220,40 @@ function FamilyPhoto() {
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
 
       {/* Стрелка + подпись Александры */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}
-      >
+      {/* Александра — женщина справа, сидит, примерно x=80% y=42% (плечо/грудь) */}
+      <div className="absolute inset-0 pointer-events-none">
         <svg
           viewBox="0 0 100 100"
           preserveAspectRatio="none"
           style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
         >
-          {/* Стрелка от подписи к Александре */}
-          {/* Подпись будет снизу (~65% Y), стрелка тянется к точке Александры */}
           <defs>
-            <marker id="arrowhead" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
-              <path d="M0,0 L6,3 L0,6 Z" fill="rgba(201,162,39,0.9)" />
+            <marker id="arrowhead-alex" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto">
+              <path d="M0,0 L5,2.5 L0,5 Z" fill="rgba(201,162,39,0.9)" />
             </marker>
           </defs>
+          {/* Стрелка от подписи (левый нижний угол ~x=38,y=76) к плечу Александры (x=79,y=44) */}
           <path
-            d={`M 55 72 Q 75 58 ${ALEKSANDRA_X} ${ALEKSANDRA_Y + 5}`}
+            d="M 38 74 Q 55 65 77 46"
             fill="none"
-            stroke="rgba(201,162,39,0.75)"
-            strokeWidth="0.7"
+            stroke="rgba(201,162,39,0.8)"
+            strokeWidth="0.6"
             strokeDasharray="2,1.5"
-            markerEnd="url(#arrowhead)"
+            markerEnd="url(#arrowhead-alex)"
           />
-          {/* Точка на Александре */}
-          <circle cx={ALEKSANDRA_X} cy={ALEKSANDRA_Y} r="2" fill="rgba(201,162,39,0.9)" />
+          {/* Точка на плече */}
+          <circle cx="79" cy="44" r="1.5" fill="rgba(201,162,39,0.9)" />
         </svg>
 
-        {/* Подпись */}
+        {/* Подпись — левее, ближе к центру */}
         <div
-          style={{ position: "absolute", left: "30%", top: "67%", transform: "translateX(-50%)" }}
+          style={{ position: "absolute", left: "8%", top: "70%" }}
           onMouseEnter={() => setHovered(true)}
           onMouseLeave={() => setHovered(false)}
         >
           <div
-            className="bg-black/80 backdrop-blur-sm border border-accent/40 rounded-lg px-3 py-1.5 pointer-events-auto"
-            style={{ transition: "border-color .2s", borderColor: hovered ? "rgba(201,162,39,0.8)" : "rgba(201,162,39,0.4)" }}
+            className="bg-black/80 backdrop-blur-sm border rounded-lg px-3 py-1.5 pointer-events-auto transition-colors duration-200"
+            style={{ borderColor: hovered ? "rgba(201,162,39,0.8)" : "rgba(201,162,39,0.4)" }}
           >
             <p className="font-mono text-[9px] tracking-[0.2em] text-accent uppercase whitespace-nowrap">Александра Крюгер</p>
           </div>
