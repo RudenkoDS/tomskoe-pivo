@@ -143,36 +143,31 @@ function MainVideo({ src, vertical = false }: { src: string; vertical?: boolean 
    Архивный блок — reveal-анимация
 ────────────────────────────────────────────── */
 const ARCHIVE_ITEMS = [
-  { src: `${B}/history/factory-engraving.jpg`,  alt: "Гравюра завода",             label: "Гравюра · 1884",        contain: false, delay: 0   },
-  { src: `${B}/history/zavod-kruger.jpg`,        alt: "Завод Крюгеръ",              label: "Пивзавод · Томск",      contain: false, delay: 80  },
-  { src: `${B}/history/label-bavarian.jpg`,      alt: "Баварское пиво — этикетка",  label: "Баварское",             contain: true,  delay: 160 },
-  { src: `${B}/history/label-pilsner.jpg`,       alt: "Пильзенское — этикетка",     label: "Пильзенское",           contain: true,  delay: 240 },
-  { src: `${B}/history/pivo-kruger.jpg`,         alt: "Пиво Крюгеръ — реклама",    label: "Пиво Крюгеръ",          contain: true,  delay: 320 },
+  { src: `${B}/history/factory-engraving.jpg`,  alt: "Гравюра завода",             label: "Гравюра · 1884",        contain: false },
+  { src: `${B}/history/zavod-kruger.jpg`,        alt: "Завод Крюгеръ",              label: "Пивзавод · Томск",      contain: false },
+  { src: `${B}/history/label-bavarian.jpg`,      alt: "Баварское пиво — этикетка",  label: "Баварское",             contain: true  },
+  { src: `${B}/history/label-pilsner.jpg`,       alt: "Пильзенское — этикетка",     label: "Пильзенское",           contain: true  },
+  { src: `${B}/history/pivo-kruger.jpg`,         alt: "Пиво Крюгеръ — реклама",    label: "Пиво Крюгеръ",          contain: true  },
 ];
 
 function ArchiveSection() {
-  const titleReveal = useReveal(0.2);
-  const portraitReveal = useReveal(0.1);
-  const gridReveal = useReveal(0.05);
+  const sectionReveal = useReveal(0.05);
 
   return (
     <div className="relative border-t border-amber-900/15 overflow-hidden" style={{ background: "linear-gradient(to bottom, #080603, #0a0804)" }}>
-      {/* Зернистость */}
-      <div className="pointer-events-none absolute inset-0 opacity-[0.035]" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")", backgroundSize: "200px 200px" }} />
 
-      <div className="relative mx-auto max-w-[1400px] px-6 md:px-10 py-20 md:py-28">
+      <div
+        ref={sectionReveal.ref}
+        className="relative mx-auto max-w-[1400px] px-6 md:px-10 py-20 md:py-28"
+        style={{
+          opacity: sectionReveal.visible ? 1 : 0,
+          transform: sectionReveal.visible ? "none" : "translateY(24px)",
+          transition: "opacity 0.7s ease, transform 0.7s ease",
+        }}
+      >
 
         {/* Заголовок */}
-        <div
-          ref={titleReveal.ref}
-          className="mb-14 flex flex-col md:flex-row md:items-end gap-4 md:gap-16"
-          style={{
-            opacity: titleReveal.visible ? 1 : 0,
-            transform: titleReveal.visible ? "translateY(0)" : "translateY(32px)",
-            transition: "opacity 0.8s ease, transform 0.8s ease",
-            willChange: "transform, opacity",
-          }}
-        >
+        <div className="mb-14 flex flex-col md:flex-row md:items-end gap-4 md:gap-16">
           <div>
             <p className="font-mono text-[10px] tracking-[0.45em] text-accent/60 uppercase mb-3">
               Архив · Реальные документы и фотографии
@@ -190,68 +185,44 @@ function ArchiveSection() {
         <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-4 md:gap-6 items-start">
 
           {/* Портрет Карла — слева, высокий */}
-          <div
-            ref={portraitReveal.ref}
-            style={{
-              opacity: portraitReveal.visible ? 1 : 0,
-              transform: portraitReveal.visible ? "translateX(0)" : "translateX(-40px)",
-              transition: "opacity 0.9s ease 0.1s, transform 0.9s ease 0.1s",
-              willChange: "transform, opacity",
-            }}
-          >
-            <div className="relative overflow-hidden rounded-2xl group" style={{ aspectRatio: "3/4" }}>
-              <img
-                src={`${B}/history/karl-kruger.jpg`}
-                alt="Карл Крюгер. Основатель завода"
-                loading="lazy"
-                decoding="async"
-                className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-1000 group-hover:scale-105"
-              />
-              {/* Сепия-оверлей */}
-              <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, transparent 40%, rgba(8,6,3,0.9) 100%)", mixBlendMode: "multiply" }} />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#080603]/90 via-transparent to-transparent" />
-              {/* Виньетка */}
-              <div className="absolute inset-0 rounded-2xl" style={{ boxShadow: "inset 0 0 60px rgba(0,0,0,0.6)" }} />
-              <div className="absolute bottom-5 left-5 right-5">
-                <p className="font-mono text-[9px] tracking-[0.4em] text-accent uppercase mb-1.5">Основатель завода</p>
-                <p className="font-sans text-xl font-black text-white leading-none">Карл Крюгер</p>
-                <p className="font-mono text-[10px] text-white/40 mt-1">Томск · 1876</p>
-              </div>
-              {/* Год — большой фоновый текст */}
-              <div className="absolute top-4 right-4 font-sans font-black text-white/5 leading-none select-none" style={{ fontSize: "clamp(48px, 8vw, 90px)" }}>
-                1876
-              </div>
+          <div className="relative overflow-hidden rounded-2xl group" style={{ aspectRatio: "3/4" }}>
+            <img
+              src={`${B}/history/karl-kruger.jpg`}
+              alt="Карл Крюгер. Основатель завода"
+              loading="eager"
+              decoding="async"
+              className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
+            />
+            <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, transparent 40%, rgba(8,6,3,0.9) 100%)", mixBlendMode: "multiply" }} />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#080603]/90 via-transparent to-transparent" />
+            <div className="absolute inset-0 rounded-2xl" style={{ boxShadow: "inset 0 0 60px rgba(0,0,0,0.6)" }} />
+            <div className="absolute bottom-5 left-5 right-5">
+              <p className="font-mono text-[9px] tracking-[0.4em] text-accent uppercase mb-1.5">Основатель завода</p>
+              <p className="font-sans text-xl font-black text-white leading-none">Карл Крюгер</p>
+              <p className="font-mono text-[10px] text-white/40 mt-1">Томск · 1876</p>
+            </div>
+            <div className="absolute top-4 right-4 font-sans font-black text-white/5 leading-none select-none" style={{ fontSize: "clamp(48px, 8vw, 90px)" }}>
+              1876
             </div>
           </div>
 
           {/* Правая сетка артефактов */}
-          <div
-            ref={gridReveal.ref}
-            className="grid grid-cols-2 md:grid-cols-3 gap-3"
-          >
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {ARCHIVE_ITEMS.map((item) => (
               <div
                 key={item.src}
                 className="relative overflow-hidden rounded-xl group cursor-pointer"
-                style={{
-                  aspectRatio: item.contain ? "3/4" : "4/3",
-                  background: "#0d0b08",
-                  opacity: gridReveal.visible ? 1 : 0,
-                  transform: gridReveal.visible ? "translateY(0)" : "translateY(40px)",
-                  transition: `opacity 0.7s ease ${item.delay}ms, transform 0.7s ease ${item.delay}ms`,
-                  willChange: "transform, opacity",
-                }}
+                style={{ aspectRatio: item.contain ? "3/4" : "4/3", background: "#0d0b08" }}
               >
                 <img
                   src={item.src}
                   alt={item.alt}
-                  loading="lazy"
+                  loading="eager"
                   decoding="async"
-                  className={`absolute inset-0 w-full h-full transition-transform duration-700 group-hover:scale-105 ${item.contain ? "object-contain p-3" : "object-cover"}`}
+                  className={`absolute inset-0 w-full h-full transition-transform duration-500 group-hover:scale-105 ${item.contain ? "object-contain p-3" : "object-cover"}`}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-                {/* hover-оверлей */}
-                <div className="absolute inset-0 bg-accent/0 group-hover:bg-accent/5 transition-colors duration-500" />
+                <div className="absolute inset-0 bg-accent/0 group-hover:bg-accent/5 transition-colors duration-300" />
                 <p className="absolute bottom-3 left-3 font-mono text-[9px] tracking-[0.2em] text-white/60 uppercase group-hover:text-accent/80 transition-colors duration-300">
                   {item.label}
                 </p>
@@ -265,10 +236,6 @@ function ArchiveSection() {
                 background: "linear-gradient(135deg, rgba(200,146,42,0.08), rgba(200,146,42,0.03))",
                 border: "1px solid rgba(200,146,42,0.15)",
                 aspectRatio: "4/3",
-                opacity: gridReveal.visible ? 1 : 0,
-                transform: gridReveal.visible ? "translateY(0)" : "translateY(40px)",
-                transition: "opacity 0.7s ease 400ms, transform 0.7s ease 400ms",
-                willChange: "transform, opacity",
               }}
             >
               <p className="font-mono text-[8px] tracking-[0.3em] text-accent/60 uppercase mb-3">Цитата · 1876</p>
