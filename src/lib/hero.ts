@@ -1,5 +1,6 @@
 export const FRAME_COUNT = 188;
-export const framePath = (n: number) => `/frames/frame_${String(n).padStart(4, "0")}.jpg?v=2`;
+const BASE = process.env.NEXT_PUBLIC_BASE ?? "";
+export const framePath = (n: number) => `${BASE}/frames/frame_${String(n).padStart(4, "0")}.jpg?v=2`;
 
 export type Dialogue = { id: string; show: number; hide: number; quote: string; sub: string; videoSrc?: string };
 
@@ -10,7 +11,7 @@ export const DIALOGUES: Dialogue[] = [
     hide: 0.38,
     quote: "9 сентября 1876",
     sub: "Карл Крюгер закладывает первый камень завода у подножия Острожной горы",
-    videoSrc: "/scenes/karl-zakl-kamnya.mp4",
+    videoSrc: `${BASE}/scenes/karl-zakl-kamnya.mp4`,
   },
   {
     id: "d2",

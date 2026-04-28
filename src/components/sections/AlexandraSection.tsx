@@ -19,15 +19,165 @@ function useReveal(threshold = 0.15) {
 
 const B = process.env.NEXT_PUBLIC_BASE ?? "";
 
-const BARLEY_BARS = [
-  { month: "Авг 1914", value: 20, label: "20 пудов" },
-  { month: "Окт 1914", value: 60, label: "60 пудов" },
-  { month: "Янв 1915", value: 130, label: "130 пудов" },
-  { month: "Апр 1915", value: 200, label: "200 пудов" },
-  { month: "Авг 1915", value: 280, label: "280 пудов" },
-  { month: "Янв 1916", value: 350, label: "350 пудов" },
-  { month: "Апр 1916", value: 400, label: "400 пудов" },
+const BARLEY_DATA = [
+  { month: "Авг '14", value: 20,  label: "20" },
+  { month: "Окт '14", value: 60,  label: "60" },
+  { month: "Янв '15", value: 130, label: "130" },
+  { month: "Апр '15", value: 200, label: "200" },
+  { month: "Авг '15", value: 280, label: "280" },
+  { month: "Янв '16", value: 350, label: "350" },
+  { month: "Апр '16", value: 400, label: "400" },
 ];
+
+const MAX_VAL = 400;
+const CHART_W = 700;
+const CHART_H = 180;
+const PAD_L = 0;
+const PAD_R = 0;
+const PAD_T = 20;
+const PAD_B = 0;
+
+function barleyX(i: number): number {
+  const step = (CHART_W - PAD_L - PAD_R) / (BARLEY_DATA.length - 1);
+  return PAD_L + i * step;
+}
+function barleyY(v: number): number {
+  return PAD_T + (CHART_H - PAD_T - PAD_B) * (1 - v / MAX_VAL);
+}
+
+function BarleyChart({ visible }: { visible: boolean }) {
+  const [progress, setProgress] = useState(0);
+  const rafRef = useRef<number | null>(null);
+  const startRef = useRef<number | null>(null);
+  const DURATION = 1600;
+
+  useEffect(() => {
+    if (!visible) return;
+    const animate = (now: number) => {
+      if (!startRef.current) startRef.current = now;
+      const p = Math.min((now - startRef.current) / DURATION, 1);
+      // ease out cubic
+      const eased = 1 - Math.pow(1 - p, 3);
+      setProgress(eased);
+      if (p < 1) rafRef.current = requestAnimationFrame(animate);
+    };
+    rafRef.current = requestAnimationFrame(animate);
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+  }, [visible]);
+
+  // Build animated path — draw up to progress point
+  const totalPoints = BARLEY_DATA.length;
+  const animIndex = progress * (totalPoints - 1);
+
+  // Interpolate points up to animIndex
+  const points: { x: number; y: number }[] = [];
+  for (let i = 0; i < totalPoints; i++) {
+    if (i <= animIndex) {
+      if (i < Math.floor(animIndex) || i === totalPoints - 1) {
+        points.push({ x: barleyX(i), y: barleyY(BARLEY_DATA[i].value) });
+      } else {
+        // partial last segment
+        const frac = animIndex - Math.floor(animIndex);
+        const x0 = barleyX(Math.floor(animIndex));
+        const y0 = barleyY(BARLEY_DATA[Math.floor(animIndex)].value);
+        const x1 = barleyX(Math.floor(animIndex) + 1);
+        const y1 = barleyY(BARLEY_DATA[Math.floor(animIndex) + 1].value);
+        points.push({ x: x0 + (x1 - x0) * frac, y: y0 + (y1 - y0) * frac });
+      }
+    }
+  }
+
+  const linePath = points.length > 1
+    ? points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ")
+    : "";
+
+  const areaPath = points.length > 1
+    ? `${linePath} L ${points[points.length - 1].x} ${CHART_H} L ${points[0].x} ${CHART_H} Z`
+    : "";
+
+  const lastPoint = points[points.length - 1];
+
+  return (
+    <div style={{ width: "100%", position: "relative" }}>
+      <svg
+        viewBox={`0 0 ${CHART_W} ${CHART_H + 30}`}
+        preserveAspectRatio="none"
+        style={{ width: "100%", height: "auto", display: "block", minHeight: 140 }}
+      >
+        <defs>
+          <linearGradient id="barley-area" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="rgba(201,162,39,0.35)" />
+            <stop offset="100%" stopColor="rgba(201,162,39,0.03)" />
+          </linearGradient>
+        </defs>
+
+        {/* Горизонтальные сетки */}
+        {[0, 100, 200, 300, 400].map(v => (
+          <line key={v}
+            x1={PAD_L} y1={barleyY(v)}
+            x2={CHART_W - PAD_R} y2={barleyY(v)}
+            stroke="rgba(201,162,39,0.08)" strokeWidth="1"
+          />
+        ))}
+
+        {/* Area fill */}
+        {areaPath && (
+          <path d={areaPath} fill="url(#barley-area)" />
+        )}
+
+        {/* Line */}
+        {linePath && (
+          <path d={linePath} fill="none" stroke="rgba(201,162,39,0.8)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        )}
+
+        {/* Dots — только завершённые точки */}
+        {BARLEY_DATA.map((d, i) => {
+          if (i > animIndex) return null;
+          const x = barleyX(i);
+          const y = barleyY(d.value);
+          return (
+            <circle key={i} cx={x} cy={y} r="4" fill="#C9A227" opacity={i === 6 ? 1 : 0.6} />
+          );
+        })}
+
+        {/* Glowing dot at last animated point */}
+        {lastPoint && progress > 0 && (
+          <>
+            <circle cx={lastPoint.x} cy={lastPoint.y} r="8" fill="rgba(201,162,39,0.15)" />
+            <circle cx={lastPoint.x} cy={lastPoint.y} r="4" fill="#C9A227" />
+          </>
+        )}
+
+        {/* X-axis labels */}
+        {BARLEY_DATA.map((d, i) => (
+          <text key={i} x={barleyX(i)} y={CHART_H + 18}
+            textAnchor="middle"
+            fill="rgba(255,255,255,0.35)"
+            fontSize="10"
+            fontFamily="monospace"
+            style={{ opacity: i / (totalPoints - 1) <= progress ? 1 : 0, transition: "opacity .3s" }}
+          >
+            {d.month}
+          </text>
+        ))}
+
+        {/* Value labels above dots */}
+        {BARLEY_DATA.map((d, i) => (
+          <text key={i} x={barleyX(i)} y={barleyY(d.value) - 10}
+            textAnchor="middle"
+            fill="rgba(201,162,39,0.8)"
+            fontSize="11"
+            fontFamily="monospace"
+            fontWeight="600"
+            style={{ opacity: i / (totalPoints - 1) <= progress ? 1 : 0, transition: "opacity .3s" }}
+          >
+            {d.label}
+          </text>
+        ))}
+      </svg>
+    </div>
+  );
+}
 
 function AlexandraVideo() {
   const ref = useRef<HTMLVideoElement>(null);
@@ -38,14 +188,14 @@ function AlexandraVideo() {
     else { ref.current.play().catch(() => {}); setPlaying(true); }
   };
   return (
-    <div className="relative rounded-2xl overflow-hidden bg-black cursor-pointer group" style={{ aspectRatio: "9/16" }} onClick={toggle}>
+    <div className="relative rounded-2xl overflow-hidden bg-black cursor-pointer group" style={{ aspectRatio: "16/9" }} onClick={toggle}>
       <video ref={ref} src={`${B}/scenes/aleksandra.mp4`}
-        className="absolute inset-0 w-full h-full object-contain" muted playsInline loop />
+        className="absolute inset-0 w-full h-full object-cover" muted playsInline loop />
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
       {!playing && (
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-14 h-14 rounded-full border-2 border-accent/60 bg-accent/15 flex items-center justify-center backdrop-blur-md group-hover:scale-110 transition-transform">
-            <span className="text-accent text-lg ml-1">▶</span>
+          <div className="w-16 h-16 rounded-full border-2 border-accent/70 bg-accent/15 flex items-center justify-center backdrop-blur-md group-hover:scale-110 transition-transform">
+            <span className="text-accent text-xl ml-1">▶</span>
           </div>
         </div>
       )}
@@ -56,33 +206,63 @@ function AlexandraVideo() {
   );
 }
 
-/* Семейное фото с выделением Александры */
+// Координаты Александры на фото (женщина справа) — в % от размера фото
+// Семья Роберта: он сидит в центре, Александра — женщина стоит справа
+const ALEKSANDRA_X = 78; // % from left
+const ALEKSANDRA_Y = 28; // % from top
+
 function FamilyPhoto() {
   const [hovered, setHovered] = useState(false);
   return (
-    <div className="relative overflow-hidden rounded-2xl group" style={{ aspectRatio: "1/1" }}>
-      <img src={`${B}/history/family-robert.jpg`} alt="Семья Крюгеров" loading="lazy" decoding="async"
-        className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-103" />
+    <div className="relative overflow-hidden rounded-2xl" style={{ aspectRatio: "3/4" }}>
+      <img
+        src={`${B}/history/family-robert.jpg`}
+        alt="Семья Крюгеров"
+        loading="lazy"
+        decoding="async"
+        className="w-full h-full object-cover object-top"
+      />
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
 
-      {/* Кружок-выделение Александры (правый угол снимка) */}
+      {/* Стрелка + подпись Александры */}
       <div
-        className="absolute cursor-pointer"
-        style={{ right: "8%", top: "12%", width: "28%", aspectRatio: "1/1" }}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
+        className="absolute inset-0 pointer-events-none"
+        style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}
       >
-        {/* Анимированное кольцо */}
-        <div className="absolute inset-0 rounded-full border-2 border-accent animate-pulse" />
-        <div className={`absolute inset-0 rounded-full border border-accent/50 transition-all duration-300 ${hovered ? "scale-110" : "scale-100"}`} />
-        {/* Линия-указатель */}
-        <svg className="absolute -bottom-8 -left-16 w-20 h-12 pointer-events-none" viewBox="0 0 80 48">
-          <path d="M 70 4 Q 40 4 10 44" stroke="rgba(201,162,39,0.6)" strokeWidth="1" fill="none" strokeDasharray="3,3" />
-          <circle cx="10" cy="44" r="2" fill="rgba(201,162,39,0.7)" />
+        <svg
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
+        >
+          {/* Стрелка от подписи к Александре */}
+          {/* Подпись будет снизу (~65% Y), стрелка тянется к точке Александры */}
+          <defs>
+            <marker id="arrowhead" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+              <path d="M0,0 L6,3 L0,6 Z" fill="rgba(201,162,39,0.9)" />
+            </marker>
+          </defs>
+          <path
+            d={`M 55 72 Q 75 58 ${ALEKSANDRA_X} ${ALEKSANDRA_Y + 5}`}
+            fill="none"
+            stroke="rgba(201,162,39,0.75)"
+            strokeWidth="0.7"
+            strokeDasharray="2,1.5"
+            markerEnd="url(#arrowhead)"
+          />
+          {/* Точка на Александре */}
+          <circle cx={ALEKSANDRA_X} cy={ALEKSANDRA_Y} r="2" fill="rgba(201,162,39,0.9)" />
         </svg>
+
         {/* Подпись */}
-        <div className={`absolute -bottom-14 -left-20 transition-all duration-300 ${hovered ? "opacity-100" : "opacity-70"}`}>
-          <div className="bg-black/80 backdrop-blur-sm border border-accent/30 rounded-lg px-2.5 py-1.5">
+        <div
+          style={{ position: "absolute", left: "30%", top: "67%", transform: "translateX(-50%)" }}
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+        >
+          <div
+            className="bg-black/80 backdrop-blur-sm border border-accent/40 rounded-lg px-3 py-1.5 pointer-events-auto"
+            style={{ transition: "border-color .2s", borderColor: hovered ? "rgba(201,162,39,0.8)" : "rgba(201,162,39,0.4)" }}
+          >
             <p className="font-mono text-[9px] tracking-[0.2em] text-accent uppercase whitespace-nowrap">Александра Крюгер</p>
           </div>
         </div>
@@ -96,9 +276,7 @@ function FamilyPhoto() {
 }
 
 export function AlexandraSection() {
-  const headerReveal = useReveal(0.2);
-  const quoteReveal = useReveal(0.15);
-  const statsReveal = useReveal(0.1);
+  const mainReveal = useReveal(0.1);
   const chartReveal = useReveal(0.1);
   const bottleReveal = useReveal(0.1);
 
@@ -106,189 +284,124 @@ export function AlexandraSection() {
     <section id="war" className="relative bg-background border-t border-amber-900/15 overflow-hidden">
       {/* Фоновый текст */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
-        <span className="font-sans font-black text-[25vw] text-white/[0.018] leading-none tracking-tighter">
-          1914
-        </span>
+        <span className="font-sans font-black text-[25vw] text-white/[0.018] leading-none tracking-tighter">1914</span>
       </div>
 
-      <div className="relative z-10 mx-auto max-w-[1400px] px-6 md:px-10 py-24 md:py-32">
+      <div className="relative z-10 mx-auto max-w-[1400px] px-6 md:px-10 py-20 md:py-28">
 
-        {/* Заголовок */}
+        {/* ── Заголовок ── */}
         <div
-          ref={headerReveal.ref}
-          style={{
-            opacity: headerReveal.visible ? 1 : 0,
-            transform: headerReveal.visible ? "translateY(0)" : "translateY(32px)",
-            transition: "opacity 0.8s ease, transform 0.8s ease",
-            willChange: "transform, opacity",
-          }}
-          className="mb-16"
+          ref={mainReveal.ref}
+          style={{ opacity: mainReveal.visible ? 1 : 0, transform: mainReveal.visible ? "none" : "translateY(24px)", transition: "all .8s ease", willChange: "transform,opacity" }}
         >
-          <p className="font-mono text-[10px] tracking-[0.45em] text-accent/80 uppercase mb-4">
-            1914–1916 · Невидимый фронт
-          </p>
-          <h2 className="font-sans text-4xl md:text-6xl font-black tracking-tighter text-foreground leading-[0.92]">
-            Александра<br /><span className="text-accent">Крюгер</span>
-          </h2>
-          <p className="mt-5 font-sans text-base md:text-lg text-muted max-w-[54ch] leading-relaxed">
-            Война началась — Роберт застрял в Германии. Россия объявила сухой закон.
-            Пиво оказалось под запретом. Александра осталась одна.
-          </p>
-        </div>
+          <div className="mb-10">
+            <p className="font-mono text-[10px] tracking-[0.45em] text-accent/80 uppercase mb-4">1914–1916 · Невидимый фронт</p>
+            <h2 className="font-sans text-4xl md:text-6xl font-black tracking-tighter text-foreground leading-[0.92]">
+              Александра<br /><span className="text-accent">Крюгер</span>
+            </h2>
+            <p className="mt-4 font-sans text-base md:text-lg text-muted max-w-[54ch] leading-relaxed">
+              Война началась — Роберт застрял в Германии. Россия объявила сухой закон.
+              Пиво оказалось под запретом. Александра осталась одна.
+            </p>
+          </div>
 
-        {/* Видео + семейное фото */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
-          <AlexandraVideo />
-          <FamilyPhoto />
-        </div>
+          {/* ── Верхняя сетка: видео (слева) + текст (справа) ── */}
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-6 mb-6">
+            {/* Левая колонка: большое горизонтальное видео */}
+            <AlexandraVideo />
 
-        {/* Основная раскладка: цитата + статистика */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-6 mb-10">
-
-          {/* Цитата и история */}
-          <div
-            ref={quoteReveal.ref}
-            className="card-surface p-8 md:p-10 flex flex-col justify-between"
-            style={{
-              opacity: quoteReveal.visible ? 1 : 0,
-              transform: quoteReveal.visible ? "translateX(0)" : "translateX(-32px)",
-              transition: "opacity 0.8s ease, transform 0.8s ease",
-              willChange: "transform, opacity",
-            }}
-          >
-            <div>
-              <p className="font-mono text-[10px] tracking-[0.3em] text-accent/60 uppercase mb-5">
-                Решение · 1914
-              </p>
-              <p className="font-sans text-2xl md:text-3xl text-foreground leading-snug italic font-light mb-6">
-                «Пока есть зерно — завод живёт»
-              </p>
-              <div className="h-px bg-accent/15 mb-6" />
-              <p className="font-sans text-base text-muted leading-relaxed mb-4">
-                Когда пиво запретили, Александра не закрыла завод. Она запустила производство
-                <strong className="text-foreground/80"> ячменного кофе</strong> — горячий напиток из жареного ячменя,
-                популярный в Германии и технологически близкий к пивоварению.
-              </p>
-              <p className="font-sans text-base text-muted leading-relaxed">
-                Это был гениальный манёвр: оборудование работало, сотрудники получали жалованье,
-                а завод сохранял юридический статус и право на здание. Когда война кончилась —
-                вернуться к пиву было просто.
-              </p>
-            </div>
-            <div className="mt-8 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full border border-accent/30 bg-accent/5 flex items-center justify-center text-accent font-sans font-black text-xl">А</div>
+            {/* Правая колонка: цитата + история */}
+            <div className="card-surface p-7 flex flex-col gap-4" style={{ borderLeft: "2px solid rgba(201,162,39,0.4)" }}>
               <div>
-                <p className="font-sans text-sm font-semibold text-foreground">Александра Крюгер</p>
-                <p className="font-mono text-[10px] text-muted">Управляющая · 1914–1916</p>
+                <p className="font-mono text-[10px] tracking-[0.3em] text-accent/60 uppercase mb-3">Решение · 1914</p>
+                <p className="font-sans text-xl md:text-2xl text-foreground leading-snug italic font-light mb-4">
+                  «Пока есть зерно — завод живёт»
+                </p>
+                <div className="h-px bg-accent/15 mb-4" />
+                <p className="font-sans text-sm text-muted leading-relaxed mb-3">
+                  Когда пиво запретили, Александра не закрыла завод. Она запустила производство
+                  <strong className="text-foreground/80"> ячменного кофе</strong> — горячий напиток из жареного ячменя,
+                  популярный в Германии и технологически близкий к пивоварению.
+                </p>
+                <p className="font-sans text-sm text-muted leading-relaxed">
+                  Гениальный манёвр: оборудование работало, сотрудники получали жалованье,
+                  завод сохранял юридический статус. Когда война кончилась — вернуться к пиву было просто.
+                </p>
+              </div>
+              <div className="mt-auto flex items-center gap-3 pt-4 border-t border-amber-900/20">
+                <div className="w-9 h-9 rounded-full border border-accent/30 bg-accent/5 flex items-center justify-center text-accent font-sans font-black text-base shrink-0">А</div>
+                <div>
+                  <p className="font-sans text-sm font-semibold text-foreground">Александра Крюгер</p>
+                  <p className="font-mono text-[10px] text-muted">Управляющая · 1914–1916</p>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Статистика */}
-          <div
-            ref={statsReveal.ref}
-            className="flex flex-col gap-4"
-            style={{
-              opacity: statsReveal.visible ? 1 : 0,
-              transform: statsReveal.visible ? "translateX(0)" : "translateX(32px)",
-              transition: "opacity 0.9s ease 0.1s, transform 0.9s ease 0.1s",
-              willChange: "transform, opacity",
-            }}
-          >
-            {[
-              { val: "400", unit: "пудов/мес", desc: "Максимальный объём ячменного кофе", sub: "≈ 6,5 тонны в месяц" },
-              { val: "2", unit: "года", desc: "Непрерывная работа под запретом", sub: "1914–1916, без остановки" },
-              { val: "0", unit: "закрытий", desc: "Завод пережил войну и сухой закон", sub: "Единственный в регионе" },
-            ].map((s, i) => (
-              <div
-                key={s.desc}
-                className="card-surface p-6 flex flex-col gap-2"
-                style={{
-                  opacity: statsReveal.visible ? 1 : 0,
-                  transform: statsReveal.visible ? "translateY(0)" : "translateY(24px)",
-                  transition: `opacity 0.7s ease ${i * 100}ms, transform 0.7s ease ${i * 100}ms`,
-                  willChange: "transform, opacity",
-                }}
-              >
-                <div className="flex items-baseline gap-2">
-                  <span className="font-sans text-4xl font-black text-accent">{s.val}</span>
-                  <span className="font-mono text-sm text-accent/70">{s.unit}</span>
-                </div>
-                <p className="font-sans text-sm text-foreground/80">{s.desc}</p>
-                <p className="font-mono text-[10px] text-muted/60">{s.sub}</p>
+          {/* ── Нижняя сетка: фото семьи (слева) + статы (справа) ── */}
+          <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6 mb-8">
+            {/* Фото семьи — вертикальное, компактное */}
+            <FamilyPhoto />
+
+            {/* Правая часть: три стата */}
+            <div className="flex flex-col gap-4 justify-center">
+              <div className="grid grid-cols-3 gap-4">
+                {[
+                  { val: "400", unit: "пудов/мес", desc: "Максимум ячменного кофе", sub: "≈ 6,5 т/мес" },
+                  { val: "2",   unit: "года",       desc: "Без остановки",          sub: "1914–1916" },
+                  { val: "0",   unit: "закрытий",   desc: "Пережил войну",          sub: "Единственный" },
+                ].map((s) => (
+                  <div key={s.desc} className="card-surface p-5 flex flex-col gap-1 text-center">
+                    <p className="font-sans text-4xl font-black text-accent leading-none">{s.val}</p>
+                    <p className="font-mono text-[9px] text-accent/70 uppercase mt-1">{s.unit}</p>
+                    <p className="font-mono text-[9px] text-muted/60 leading-tight mt-1">{s.desc}</p>
+                    <p className="font-mono text-[8px] text-muted/40">{s.sub}</p>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
           </div>
         </div>
 
-        {/* График роста производства ячменного кофе */}
+        {/* ── График роста ── */}
         <div
           ref={chartReveal.ref}
-          className="card-surface p-6 md:p-8 mb-10"
-          style={{
-            opacity: chartReveal.visible ? 1 : 0,
-            transform: chartReveal.visible ? "translateY(0)" : "translateY(32px)",
-            transition: "opacity 0.8s ease 0.2s, transform 0.8s ease 0.2s",
-            willChange: "transform, opacity",
-          }}
+          className="card-surface p-6 md:p-8 mb-8"
+          style={{ opacity: chartReveal.visible ? 1 : 0, transform: chartReveal.visible ? "none" : "translateY(24px)", transition: "all .8s ease .1s", willChange: "transform,opacity" }}
         >
-          <p className="font-mono text-[10px] tracking-[0.3em] text-accent/70 uppercase mb-1">
-            Производство ячменного кофе · 1914–1916
-          </p>
-          <p className="font-mono text-[10px] text-muted/50 mb-6">
-            Объём в пудах в месяц (1 пуд ≈ 16,4 кг)
-          </p>
-          <div className="flex items-end gap-3 h-32 md:h-40">
-            {BARLEY_BARS.map((bar, i) => (
-              <div key={bar.month} className="flex flex-col items-center gap-2 flex-1">
-                <p className="font-mono text-[9px] text-accent/80 text-center transition-all duration-300"
-                  style={{ opacity: chartReveal.visible ? 1 : 0, transition: `opacity 0.4s ease ${i * 80 + 400}ms` }}>
-                  {bar.label}
-                </p>
-                <div
-                  className="w-full rounded-t-sm"
-                  style={{
-                    height: chartReveal.visible ? `${(bar.value / 400) * 100}%` : "0%",
-                    background: `linear-gradient(to top, rgba(201,162,39,0.9), rgba(201,162,39,0.4))`,
-                    transition: `height 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) ${i * 80}ms`,
-                    minHeight: "2px",
-                  }}
-                />
-                <p className="font-mono text-[8px] text-muted/60 text-center leading-tight">{bar.month}</p>
-              </div>
-            ))}
+          <div className="flex items-end justify-between mb-6">
+            <div>
+              <p className="font-mono text-[10px] tracking-[0.3em] text-accent/70 uppercase mb-1">Производство ячменного кофе · 1914–1916</p>
+              <p className="font-mono text-[10px] text-muted/50">Объём в пудах в месяц (1 пуд ≈ 16,4 кг)</p>
+            </div>
+            <div className="text-right">
+              <p className="font-sans text-3xl font-black text-accent">×20</p>
+              <p className="font-mono text-[9px] text-muted/50 uppercase">рост за 2 года</p>
+            </div>
           </div>
-          <p className="mt-4 font-mono text-[9px] text-muted/40">
+
+          <BarleyChart visible={chartReveal.visible} />
+
+          <p className="mt-3 font-mono text-[9px] text-muted/40">
             Завод не остановился ни на один день. За 2 года сохранил оборудование, команду и право на производство.
           </p>
         </div>
 
-        {/* 1927 — Конец династии + находка бутылки 2012 */}
+        {/* ── 1927 + Находка бутылки ── */}
         <div
           ref={bottleReveal.ref}
-          className="grid grid-cols-1 md:grid-cols-[1fr_1fr] gap-6"
-          style={{
-            opacity: bottleReveal.visible ? 1 : 0,
-            transform: bottleReveal.visible ? "translateY(0)" : "translateY(32px)",
-            transition: "opacity 0.8s ease 0.1s, transform 0.8s ease 0.1s",
-            willChange: "transform, opacity",
-          }}
+          className="grid grid-cols-1 md:grid-cols-2 gap-5"
+          style={{ opacity: bottleReveal.visible ? 1 : 0, transform: bottleReveal.visible ? "none" : "translateY(24px)", transition: "all .8s ease .1s", willChange: "transform,opacity" }}
         >
-          {/* 1927 */}
-          <div className="card-surface p-7 md:p-8 flex flex-col gap-4">
+          <div className="card-surface p-7 flex flex-col gap-4">
             <div>
               <p className="font-mono text-[10px] tracking-[0.4em] text-accent/60 uppercase mb-3">1927</p>
-              <h3 className="font-sans text-2xl md:text-3xl font-black tracking-tighter text-foreground leading-tight mb-4">
-                Конец<br />династии
-              </h3>
+              <h3 className="font-sans text-2xl md:text-3xl font-black tracking-tighter text-foreground leading-tight mb-3">Конец<br />династии</h3>
             </div>
             <p className="font-sans text-sm text-muted leading-relaxed">
               В августе 1927 года семья Крюгеров навсегда покинула Томск. Советская власть
               национализировала завод. Они уезжали с одним чемоданом — но оставили рецепты,
-              технологии и имя.
-            </p>
-            <p className="font-sans text-sm text-muted leading-relaxed">
-              Имя вернулось в город спустя 70 лет — вместе с возрождением завода в 1990-х.
+              технологии и имя. Имя вернулось в город спустя 70 лет.
             </p>
             <div className="mt-auto pt-4 border-t border-amber-900/20 flex items-center gap-3">
               <span className="font-sans text-3xl font-black text-accent/30">70</span>
@@ -296,21 +409,10 @@ export function AlexandraSection() {
             </div>
           </div>
 
-          {/* Находка бутылки 2012 */}
-          <div
-            className="p-7 md:p-8 flex flex-col gap-4 rounded-2xl"
-            style={{
-              background: "linear-gradient(135deg, rgba(201,162,39,0.07), rgba(201,162,39,0.02))",
-              border: "1px solid rgba(201,162,39,0.2)",
-            }}
-          >
+          <div className="p-7 rounded-2xl flex flex-col gap-4" style={{ background: "linear-gradient(135deg, rgba(201,162,39,0.07), rgba(201,162,39,0.02))", border: "1px solid rgba(201,162,39,0.2)" }}>
             <div>
-              <p className="font-mono text-[10px] tracking-[0.4em] text-accent/80 uppercase mb-3">
-                2012 · Находка
-              </p>
-              <h3 className="font-sans text-2xl md:text-3xl font-black tracking-tighter text-foreground leading-tight mb-4">
-                122 года<br /><span className="text-accent">в земле</span>
-              </h3>
+              <p className="font-mono text-[10px] tracking-[0.4em] text-accent/80 uppercase mb-3">2012 · Находка</p>
+              <h3 className="font-sans text-2xl md:text-3xl font-black tracking-tighter text-foreground leading-tight mb-3">122 года<br /><span className="text-accent">в земле</span></h3>
             </div>
             <p className="font-sans text-sm text-muted leading-relaxed">
               В июле 2012 года на площади Батенькова при строительстве гостиницы нашли
@@ -318,15 +420,11 @@ export function AlexandraSection() {
               великого наводнения 1890 года.
             </p>
             <p className="font-sans text-sm text-muted leading-relaxed">
-              Пиво сохранилось идеально чистым. Специалисты завода совместно с немецкими
-              экспертами восстановили рецепт. Так родилось <strong className="text-foreground/80">«Богемское»</strong> — пиво
-              по рецепту 1884 года.
+              Пиво сохранилось идеально. Совместно с немецкими экспертами восстановили рецепт.
+              Так родилось <strong className="text-foreground/80">«Богемское»</strong> — пиво по рецепту 1884 года.
             </p>
-            <div className="mt-auto pt-4 border-t border-accent/15 flex items-center gap-3">
-              <span className="font-mono text-[10px] text-muted/50 leading-relaxed">
-                Площадь Батенькова · Томск · 2012<br />
-                «Богемское» — рецепт 1884 года
-              </span>
+            <div className="mt-auto pt-4 border-t border-accent/15">
+              <p className="font-mono text-[10px] text-muted/50">Площадь Батенькова · Томск · 2012 · «Богемское» — рецепт 1884</p>
             </div>
           </div>
         </div>

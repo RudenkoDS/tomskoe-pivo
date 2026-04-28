@@ -36,7 +36,7 @@ export function CinematicReveal() {
 
   // Инициализация аудио
   useEffect(() => {
-    const audio = new Audio("/audio/karl-pribytie.aac");
+    const audio = new Audio(`${process.env.NEXT_PUBLIC_BASE ?? ""}/audio/karl-pribytie.aac`);
     audio.loop = true;
     audio.volume = 0;
     audioRef.current = audio;
@@ -49,18 +49,29 @@ export function CinematicReveal() {
     const ctx = canvas.getContext("2d")!;
     const section = sectionRef.current!;
 
+    let cw = 0, ch = 0, dpr = 1, isMobile = false;
+    const resizeCanvas = () => {
+      dpr = window.devicePixelRatio || 1;
+      cw = window.innerWidth;
+      ch = window.innerHeight;
+      isMobile = cw < 768;
+      canvas.width = cw * dpr;
+      canvas.height = ch * dpr;
+      canvas.style.width = cw + "px";
+      canvas.style.height = ch + "px";
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas, { passive: true });
+
     const drawFrame = (idx: number) => {
       const img = imagesRef.current[idx];
-      if (!img?.complete) return;
-      const dpr = window.devicePixelRatio || 1;
-      const isMobile = window.innerWidth < 768;
-      const w = window.innerWidth; const h = window.innerHeight;
-      canvas.width = w * dpr; canvas.height = h * dpr;
-      canvas.style.width = w + "px"; canvas.style.height = h + "px";
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const scale = Math.max(w / img.naturalWidth, h / img.naturalHeight) * (isMobile ? 1.2 : 1);
-      const sw = img.naturalWidth * scale; const sh = img.naturalHeight * scale;
-      ctx.drawImage(img, (w - sw) / 2, (h - sh) / 2, sw, sh);
+      if (!img?.complete || cw === 0) return;
+      const scale = Math.max(cw / img.naturalWidth, ch / img.naturalHeight) * (isMobile ? 1.2 : 1);
+      const sw = img.naturalWidth * scale;
+      const sh = img.naturalHeight * scale;
+      ctx.clearRect(0, 0, cw, ch);
+      ctx.drawImage(img, (cw - sw) / 2, (ch - sh) / 2, sw, sh);
     };
 
     const onScroll = () => {
@@ -113,25 +124,33 @@ export function CinematicReveal() {
 
     drawFrame(0);
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", resizeCanvas);
+    };
   }, [readyToShow]);
 
   return (
     <section id="karl" ref={sectionRef} className="scroll-animation relative">
       <div className="sticky top-0 h-screen overflow-hidden">
 
-        {/* Loading */}
-        {!loaded && (
-          <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-background gap-6">
-            <p className="font-mono text-[10px] tracking-[0.4em] text-accent/80 uppercase">
-              Эпизод 01 · Карл Крюгер · 1876
-            </p>
-            <div className="h-px w-48 bg-white/10 overflow-hidden rounded">
-              <div className="h-full bg-accent transition-all duration-300" style={{ width: `${loadProgress}%` }} />
-            </div>
-            <span className="font-mono text-xs text-muted">{loadProgress}%</span>
+        {/* Loading — плавно исчезает */}
+        <div
+          className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-background gap-6"
+          style={{
+            opacity: loaded ? 0 : 1,
+            pointerEvents: loaded ? "none" : "auto",
+            transition: "opacity 0.6s ease",
+          }}
+        >
+          <p className="font-mono text-[10px] tracking-[0.4em] text-accent/80 uppercase">
+            Эпизод 01 · Карл Крюгер · 1876
+          </p>
+          <div className="h-px w-48 bg-white/10 overflow-hidden rounded">
+            <div className="h-full bg-accent transition-all duration-300" style={{ width: `${loadProgress}%` }} />
           </div>
-        )}
+          <span className="font-mono text-xs text-muted">{loadProgress}%</span>
+        </div>
 
         <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
 

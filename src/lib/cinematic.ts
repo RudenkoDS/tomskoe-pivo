@@ -1,5 +1,6 @@
 export const CINE_FRAME_COUNT = 99;
-export const cineFramePath = (n: number) => `/frames2/frame_${String(n).padStart(4, "0")}.jpg?v=4`;
+const BASE = process.env.NEXT_PUBLIC_BASE ?? "";
+export const cineFramePath = (n: number) => `${BASE}/frames2/frame_${String(n).padStart(4, "0")}.jpg?v=4`;
 
 export type Beat = { id: string; show: number; hide: number; label: string; quote: string };
 

@@ -1,6 +1,7 @@
 "use client";
 import { useRef, useState } from "react";
 
+const B = process.env.NEXT_PUBLIC_BASE ?? "";
 const FILMS = [
   {
     id: "f1",
@@ -9,7 +10,7 @@ const FILMS = [
     desc: "Как немецкий пивовар изменил судьбу сибирского города",
     duration: "~1 мин",
     status: "ready" as const,
-    video: "/scenes/karl-chertezh.mp4",
+    video: `${B}/scenes/karl-chertezh.mp4`,
   },
   {
     id: "f2",
@@ -18,7 +19,7 @@ const FILMS = [
     desc: "Роберт Крюгер, медали Парижа и демпинговые войны",
     duration: "~45 сек",
     status: "progress" as const,
-    video: "/scenes/robert-chertezh.mp4",
+    video: `${B}/scenes/robert-chertezh.mp4`,
   },
   {
     id: "f3",
@@ -27,7 +28,7 @@ const FILMS = [
     desc: "Лёд с Томи. Рубили зимой, хранили до лета — природный холод вместо машин",
     duration: "~30 сек",
     status: "progress" as const,
-    video: "/scenes/dobyvcha-lda.mp4",
+    video: `${B}/scenes/dobyvcha-lda.mp4`,
   },
   {
     id: "f4",
@@ -36,7 +37,7 @@ const FILMS = [
     desc: "Развозка пива по городу на лошадях — первая логистика Томска",
     duration: "~30 сек",
     status: "progress" as const,
-    video: "/scenes/zavod-povozki.mp4",
+    video: `${B}/scenes/zavod-povozki.mp4`,
   },
   {
     id: "f5",
@@ -45,7 +46,7 @@ const FILMS = [
     desc: "Женщина, которая вела дела завода в переломные годы",
     duration: "~45 сек",
     status: "progress" as const,
-    video: "/scenes/aleksandra.mp4",
+    video: `${B}/scenes/aleksandra.mp4`,
   },
   {
     id: "f6",
@@ -54,7 +55,7 @@ const FILMS = [
     desc: "175 млн литров и 2% рынка страны",
     duration: "~45 сек",
     status: "planned" as const,
-    video: "/scenes/karl-zavod.mp4",
+    video: `${B}/scenes/karl-zavod.mp4`,
   },
 ];
 
@@ -128,18 +129,8 @@ export function FilmsSection() {
 
   return (
     <section id="films" className="relative overflow-hidden bg-background border-t border-amber-900/15">
-      {/* Video background (dimmed) */}
-      <div className="absolute inset-0 z-0">
-        <video
-          src="/screen2.mp4"
-          className="w-full h-full object-cover opacity-15"
-          autoPlay
-          loop
-          muted
-          playsInline
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-background/70 to-background/95" />
-      </div>
+      {/* Background gradient (видео убрано — файл не деплоится) */}
+      <div className="absolute inset-0 z-0 bg-gradient-to-b from-background via-amber-950/5 to-background" />
 
       <div className="relative z-10 mx-auto max-w-[1400px] px-6 md:px-10 py-24 md:py-32">
         {/* Header */}

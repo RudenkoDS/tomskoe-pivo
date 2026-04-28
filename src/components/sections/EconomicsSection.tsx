@@ -26,12 +26,12 @@ function EmberLine({ count = 18, side = "top" }: { count?: number; side?: "top" 
           key={i}
           className="absolute bottom-0 rounded-full"
           style={{
-            left: `${(i / count) * 100 + Math.random() * 2}%`,
-            width: `${1 + Math.random() * 1.5}px`,
-            height: `${6 + Math.random() * 14}px`,
-            background: `linear-gradient(to top, rgba(201,162,39,${0.6 + Math.random() * 0.4}), transparent)`,
-            animation: `ember ${1.8 + Math.random() * 2.4}s ease-in-out infinite`,
-            animationDelay: `${Math.random() * 3}s`,
+            left: `${(i / count) * 100 + (i % 3) * 0.7}%`,
+            width: `${1 + (i % 3) * 0.5}px`,
+            height: `${6 + (i % 5) * 3}px`,
+            background: `linear-gradient(to top, rgba(201,162,39,${0.5 + (i % 4) * 0.12}), transparent)`,
+            animation: `ember ${1.8 + (i % 5) * 0.5}s ease-in-out infinite`,
+            animationDelay: `${(i % 7) * 0.4}s`,
             opacity: 0.7,
           }}
         />
@@ -41,36 +41,118 @@ function EmberLine({ count = 18, side = "top" }: { count?: number; side?: "top" 
 }
 
 const SALARY_DATA = [
-  { label: "Ямщик", rub: "15–25", today: "180–300 тыс.", barH: 14, color: "rgba(201,162,39,0.35)" },
-  { label: "Рабочий", rub: "12–20", today: "144–240 тыс.", barH: 11, color: "rgba(201,162,39,0.3)" },
-  { label: "Служащий", rub: "30–50", today: "360–600 тыс.", barH: 22, color: "rgba(201,162,39,0.45)" },
-  { label: "Пивовар ★", rub: "50–100", today: "600 тыс.–1,2 млн", barH: 38, color: "rgba(201,162,39,0.95)", highlight: true },
-  { label: "Инженер", rub: "80–150", today: "960 тыс.–1,8 млн", barH: 52, color: "rgba(201,162,39,0.55)" },
-  { label: "Купец 1-й", rub: "500–5000+", today: "6–60 млн", barH: 100, color: "rgba(201,162,39,0.7)" },
+  { label: "Ямщик",     rub: "15–25",    today: "180–300 тыс.",       pct: 14,  color: "rgba(201,162,39,0.35)" },
+  { label: "Рабочий",   rub: "12–20",    today: "144–240 тыс.",       pct: 11,  color: "rgba(201,162,39,0.28)" },
+  { label: "Служащий",  rub: "30–50",    today: "360–600 тыс.",       pct: 22,  color: "rgba(201,162,39,0.42)" },
+  { label: "Пивовар ★", rub: "50–100",   today: "600 тыс. – 1,2 млн", pct: 38,  color: "rgba(201,162,39,1)",    highlight: true },
+  { label: "Инженер",   rub: "80–150",   today: "960 тыс. – 1,8 млн", pct: 52,  color: "rgba(201,162,39,0.52)" },
+  { label: "Купец 1-й", rub: "500–5000+",today: "6–60 млн",           pct: 100, color: "rgba(201,162,39,0.65)" },
 ];
 
 const PRICE_DATA = [
-  { item: "Хлеб ржаной, кг", old: "3–5 коп.", now: "360–600 ₽" },
-  { item: "Говядина, кг", old: "15–25 коп.", now: "1 800–3 000 ₽" },
-  { item: "Водка, ведро ~12 л", old: "7–10 руб.", now: "84–120 тыс. ₽" },
-  { item: "Аренда комнаты / мес", old: "5–15 руб.", now: "60–180 тыс. ₽" },
-  { item: "Пара сапог", old: "3–8 руб.", now: "36–96 тыс. ₽" },
-  { item: "Пиво Крюгера 0,5 л ★", old: "15–20 коп.", now: "1 800–2 400 ₽", highlight: true },
+  { item: "Хлеб ржаной, кг",         old: "3–5 коп.",    now: "360–600 ₽" },
+  { item: "Говядина, кг",             old: "15–25 коп.",  now: "1 800–3 000 ₽" },
+  { item: "Водка, ведро ~12 л",       old: "7–10 руб.",   now: "84–120 тыс. ₽" },
+  { item: "Аренда комнаты / мес",     old: "5–15 руб.",   now: "60–180 тыс. ₽" },
+  { item: "Пара сапог",               old: "3–8 руб.",    now: "36–96 тыс. ₽" },
+  { item: "Пиво Крюгера 0,5 л ★",    old: "15–20 коп.",  now: "1 800–2 400 ₽", highlight: true },
 ];
 
 const WHY = [
-  { n: "01", title: "33 800 жителей и рост +54%", body: "К 1897 году — 52 221 человек. Постоянно прибывающее население = постоянный спрос." },
-  { n: "02", title: "Золотая элита с деньгами", body: "Купцы Асташев, Горохов, Гадалов. Доходы в миллионы рублей. Им нужно качественное пиво." },
-  { n: "03", title: "100 000+ ямщиков на тракте", body: "Московско-Сибирский тракт шёл через Томск. Люди хотят холодного пива после дороги." },
-  { n: "04", title: "Конкурентов практически нет", body: "Местного пива не было — всё привозное и дорогое. Рынок полностью открыт." },
-  { n: "05", title: "Природный холод горы +4°C", body: "Склон Острожной горы давал постоянную температуру без льда и машин. Идеально для лагера." },
+  { n: "01", title: "33 800 жителей и рост +54%",      body: "К 1897 году — 52 221 человек. Постоянно прибывающее население = постоянный спрос." },
+  { n: "02", title: "Золотая элита с деньгами",         body: "Купцы Асташев, Горохов, Гадалов. Доходы в миллионы рублей. Им нужно качественное пиво." },
+  { n: "03", title: "100 000+ ямщиков на тракте",       body: "Московско-Сибирский тракт шёл через Томск. Люди хотят холодного пива после дороги." },
+  { n: "04", title: "Конкурентов практически нет",      body: "Местного пива не было — всё привозное и дорогое. Рынок полностью открыт." },
+  { n: "05", title: "Природный холод горы +4°C",        body: "Склон Острожной горы давал постоянную температуру без льда и машин. Идеально для лагера." },
 ];
+
+/* ── Калькулятор зарплат ── */
+const RATIO = 11000; // средний коэфф. пересчёта
+const SALARY_TABLE = [
+  { role: "Ямщик",      rubMin: 15,  rubMax: 25   },
+  { role: "Рабочий",    rubMin: 12,  rubMax: 20   },
+  { role: "Служащий",   rubMin: 30,  rubMax: 50   },
+  { role: "Пивовар",    rubMin: 50,  rubMax: 100  },
+  { role: "Инженер",    rubMin: 80,  rubMax: 150  },
+  { role: "Купец 1-й",  rubMin: 500, rubMax: 5000 },
+];
+
+function SalaryCalc() {
+  const [income, setIncome] = useState("");
+  const [result, setResult] = useState<null | { rubMin: number; rubMax: number; role: string; eq: string }>(null);
+
+  const calculate = () => {
+    const num = parseFloat(income.replace(/\s/g, "").replace(",", "."));
+    if (!num || num <= 0) return;
+    const rubEquiv = num / RATIO;
+    // Найти ближайшую профессию
+    let best = SALARY_TABLE[0];
+    let bestDist = Infinity;
+    for (const s of SALARY_TABLE) {
+      const mid = (s.rubMin + s.rubMax) / 2;
+      const d = Math.abs(rubEquiv - mid);
+      if (d < bestDist) { bestDist = d; best = s; }
+    }
+    const eqMin = Math.round(best.rubMin * RATIO / 1000) * 1000;
+    const eqMax = Math.round(best.rubMax * RATIO / 1000) * 1000;
+    const fmtK = (v: number) => v >= 1000000 ? `${(v / 1000000).toFixed(1)} млн ₽` : `${(v / 1000).toFixed(0)} тыс. ₽`;
+    setResult({ rubMin: best.rubMin, rubMax: best.rubMax, role: best.role, eq: `${fmtK(eqMin)} – ${fmtK(eqMax)}` });
+  };
+
+  return (
+    <div className="rounded-2xl p-7 md:p-9" style={{ background: "linear-gradient(135deg, rgba(201,162,39,0.07), rgba(201,162,39,0.02))", border: "1px solid rgba(201,162,39,0.2)" }}>
+      <p className="font-mono text-[10px] tracking-[0.4em] text-accent/70 uppercase mb-1">Персональный пересчёт</p>
+      <p className="font-sans text-xl md:text-2xl font-black text-foreground mb-2">Сколько вы зарабатывали бы в 1900-м?</p>
+      <p className="font-mono text-[10px] text-muted/50 mb-6">Данные не собираются и нигде не сохраняются.</p>
+
+      <div className="flex gap-3 flex-wrap">
+        <div className="relative flex-1 min-w-[200px]">
+          <input
+            type="number"
+            value={income}
+            onChange={e => { setIncome(e.target.value); setResult(null); }}
+            onKeyDown={e => e.key === "Enter" && calculate()}
+            placeholder="Ваша зарплата в рублях ₽"
+            className="w-full bg-white/5 border border-accent/20 rounded-xl px-4 py-3 font-mono text-sm text-foreground placeholder:text-muted/40 focus:outline-none focus:border-accent/50 transition-colors"
+          />
+        </div>
+        <button
+          onClick={calculate}
+          className="px-6 py-3 rounded-xl font-mono text-[11px] tracking-[0.2em] uppercase transition-all"
+          style={{ background: "rgba(201,162,39,0.15)", border: "1px solid rgba(201,162,39,0.35)", color: "rgba(201,162,39,0.9)" }}
+          onMouseEnter={e => (e.currentTarget.style.background = "rgba(201,162,39,0.25)")}
+          onMouseLeave={e => (e.currentTarget.style.background = "rgba(201,162,39,0.15)")}
+        >
+          Пересчитать
+        </button>
+      </div>
+
+      {result && (
+        <div className="mt-6 p-5 rounded-xl" style={{ background: "rgba(201,162,39,0.06)", border: "1px solid rgba(201,162,39,0.15)" }}>
+          <p className="font-mono text-[10px] text-accent/60 uppercase tracking-widest mb-3">Результат</p>
+          <div className="flex flex-col md:flex-row gap-4 md:items-center">
+            <div>
+              <p className="font-sans text-3xl font-black text-accent leading-none">{result.rubMin}–{result.rubMax} <span className="text-lg text-accent/60">руб./мес.</span></p>
+              <p className="font-mono text-[11px] text-muted/70 mt-1">Профессия: <span className="text-foreground/80">{result.role}</span></p>
+            </div>
+            <div className="text-accent/20 font-black text-3xl hidden md:block">=</div>
+            <div>
+              <p className="font-sans text-xl font-bold text-foreground/80">≈ {result.eq}</p>
+              <p className="font-mono text-[10px] text-muted/50 mt-1">сегодня по курсу 1 руб. 1890-х ≈ 10–12 тыс. ₽</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function EconomicsSection() {
   const hdr = useReveal(0.15);
   const sal = useReveal(0.08);
   const prc = useReveal(0.08);
   const why = useReveal(0.08);
+  const calc = useReveal(0.08);
 
   return (
     <section id="economics" className="relative bg-background border-t border-amber-900/15 overflow-hidden">
@@ -78,6 +160,10 @@ export function EconomicsSection() {
         @keyframes ember {
           0%,100% { transform: translateY(0) scaleX(1); opacity:.7 }
           50% { transform: translateY(-14px) scaleX(0.6); opacity:.3 }
+        }
+        @keyframes bar-grow {
+          from { transform: scaleY(0); transform-origin: bottom; }
+          to   { transform: scaleY(1); transform-origin: bottom; }
         }
       `}</style>
 
@@ -98,7 +184,7 @@ export function EconomicsSection() {
 
         {/* ── Конвертер — большой баннер ── */}
         <div
-          className="mb-16 rounded-2xl p-8 md:p-10 flex flex-col md:flex-row items-center md:items-end gap-4 md:gap-10"
+          className="mb-10 rounded-2xl p-8 md:p-10 flex flex-col md:flex-row items-center md:items-end gap-4 md:gap-10"
           style={{
             background: "linear-gradient(135deg, rgba(201,162,39,0.09), rgba(201,162,39,0.02))",
             border: "1px solid rgba(201,162,39,0.22)",
@@ -119,78 +205,132 @@ export function EconomicsSection() {
           </div>
         </div>
 
-        {/* ── Зарплаты + Цены ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-16">
+        {/* ── ДАШБОРД: зарплаты + цены ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
 
-          {/* Зарплаты */}
-          <div ref={sal.ref} className="card-surface p-7 md:p-8" style={{ opacity: sal.visible ? 1 : 0, transform: sal.visible ? "none" : "translateX(-28px)", transition: "all .8s ease", willChange: "transform,opacity" }}>
-            <p className="font-mono text-[11px] tracking-[0.35em] text-accent/70 uppercase mb-1">Зарплаты в Томске</p>
-            <p className="font-mono text-[10px] text-muted/40 mb-7">1880–1900 · руб/мес</p>
+          {/* ── Бар-диаграмма зарплат — дашборд стиль ── */}
+          <div ref={sal.ref} className="card-surface p-6 md:p-8" style={{ opacity: sal.visible ? 1 : 0, transform: sal.visible ? "none" : "translateX(-28px)", transition: "all .8s ease", willChange: "transform,opacity" }}>
+            <div className="flex items-end justify-between mb-6">
+              <div>
+                <p className="font-mono text-[11px] tracking-[0.35em] text-accent/70 uppercase mb-1">Зарплаты в Томске</p>
+                <p className="font-mono text-[10px] text-muted/40">1880–1900 · руб/мес</p>
+              </div>
+              <div className="text-right">
+                <p className="font-sans text-3xl font-black text-accent">50–100</p>
+                <p className="font-mono text-[9px] text-accent/60 uppercase">руб. пивовар</p>
+              </div>
+            </div>
 
-            {/* Бар-чарт */}
-            <div className="flex items-end gap-2 mb-5" style={{ height: "140px" }}>
+            {/* Горизонтальные полосы-бары — дашборд стиль */}
+            <div className="flex flex-col gap-3">
               {SALARY_DATA.map((s, i) => (
-                <div key={s.label} className="flex flex-col items-center gap-1 flex-1">
-                  <div className="w-full rounded-t-md relative overflow-hidden"
-                    style={{
-                      height: sal.visible ? `${s.barH}%` : "0%",
-                      background: s.highlight
-                        ? "linear-gradient(to top, rgba(201,162,39,1), rgba(201,162,39,0.4))"
-                        : s.color,
-                      transition: `height .9s cubic-bezier(.34,1.56,.64,1) ${i * 90}ms`,
-                      minHeight: "3px",
-                      boxShadow: s.highlight ? "0 0 12px rgba(201,162,39,0.4)" : "none",
-                    }}
-                  >
-                    {s.highlight && (
-                      <div className="absolute inset-0 animate-pulse" style={{ background: "linear-gradient(to top, rgba(201,162,39,0.2), transparent)" }} />
-                    )}
+                <div key={s.label}>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className={`font-mono text-[11px] ${s.highlight ? "text-accent font-semibold" : "text-muted/65"}`}>{s.label}</span>
+                    <div className="text-right">
+                      <span className={`font-mono text-[12px] font-bold ${s.highlight ? "text-accent" : "text-foreground/70"}`}>{s.rub} руб.</span>
+                      <span className="font-mono text-[9px] text-muted/40 ml-2">≈ {s.today}</span>
+                    </div>
+                  </div>
+                  <div className="h-2 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.04)" }}>
+                    <div
+                      className="h-full rounded-full relative overflow-hidden"
+                      style={{
+                        width: sal.visible ? `${s.pct}%` : "0%",
+                        background: s.highlight
+                          ? "linear-gradient(to right, rgba(201,162,39,1), rgba(201,162,39,0.6))"
+                          : s.color,
+                        transition: `width .9s cubic-bezier(.34,1.2,.64,1) ${i * 80}ms`,
+                        boxShadow: s.highlight ? "0 0 8px rgba(201,162,39,0.5)" : "none",
+                      }}
+                    >
+                      {s.highlight && (
+                        <div className="absolute inset-0 animate-pulse" style={{ background: "linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent)" }} />
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* Легенда */}
-            <div className="flex flex-col gap-2.5">
-              {SALARY_DATA.map(s => (
-                <div key={s.label} className="flex items-center justify-between gap-3">
-                  <span className={`font-mono text-[11px] ${s.highlight ? "text-accent font-semibold" : "text-muted/60"}`}>{s.label}</span>
-                  <div className="flex-1 border-b border-dashed border-white/5" />
-                  <div className="text-right">
-                    <span className={`font-mono text-[11px] font-semibold ${s.highlight ? "text-accent" : "text-foreground/60"}`}>{s.rub} руб.</span>
-                    <span className="font-mono text-[9px] text-muted/35 ml-2">≈ {s.today}</span>
-                  </div>
-                </div>
-              ))}
+            {/* Акцент-плашка */}
+            <div className="mt-6 rounded-xl p-4 flex items-center gap-4" style={{ background: "rgba(201,162,39,0.06)", border: "1px solid rgba(201,162,39,0.15)" }}>
+              <div>
+                <p className="font-sans text-2xl font-black text-accent leading-none">×5–10</p>
+                <p className="font-mono text-[9px] text-muted/50 uppercase mt-0.5">к рабочему</p>
+              </div>
+              <p className="font-mono text-[10px] text-muted/70 leading-relaxed">
+                Пивовар зарабатывал как 5–10 рабочих. Дефицитная профессия — конкуренции почти нет.
+              </p>
             </div>
           </div>
 
-          {/* Цены */}
-          <div ref={prc.ref} className="card-surface p-7 md:p-8" style={{ opacity: prc.visible ? 1 : 0, transform: prc.visible ? "none" : "translateX(28px)", transition: "all .8s ease", willChange: "transform,opacity" }}>
-            <p className="font-mono text-[11px] tracking-[0.35em] text-accent/70 uppercase mb-1">Цены в Томске</p>
-            <p className="font-mono text-[10px] text-muted/40 mb-7">1880–1900 · архивные данные</p>
+          {/* ── Цены — дашборд с прогресс-плашками ── */}
+          <div ref={prc.ref} className="card-surface p-6 md:p-8" style={{ opacity: prc.visible ? 1 : 0, transform: prc.visible ? "none" : "translateX(28px)", transition: "all .8s ease", willChange: "transform,opacity" }}>
+            <div className="flex items-end justify-between mb-6">
+              <div>
+                <p className="font-mono text-[11px] tracking-[0.35em] text-accent/70 uppercase mb-1">Цены в Томске</p>
+                <p className="font-mono text-[10px] text-muted/40">1880–1900 · архивные данные</p>
+              </div>
+              <div className="text-right">
+                <p className="font-sans text-3xl font-black text-accent">15–20</p>
+                <p className="font-mono text-[9px] text-accent/60 uppercase">коп. за пиво</p>
+              </div>
+            </div>
 
-            <div className="flex flex-col gap-1">
-              {PRICE_DATA.map((row, i) => (
-                <div key={row.item}
-                  className={`flex items-center gap-3 py-3.5 px-3 rounded-xl transition-colors ${row.highlight ? "bg-accent/8" : "hover:bg-white/[0.02]"}`}
-                  style={{ opacity: prc.visible ? 1 : 0, transition: `opacity .5s ease ${i * 70}ms` }}
-                >
-                  <span className={`font-mono text-[11px] flex-1 leading-snug ${row.highlight ? "text-accent" : "text-muted/65"}`}>{row.item}</span>
-                  <div className="text-right shrink-0">
-                    <span className={`font-mono text-sm font-bold block ${row.highlight ? "text-accent" : "text-foreground/75"}`}>{row.old}</span>
-                    <span className="font-mono text-[9px] text-muted/40">≈ {row.now}</span>
+            <div className="flex flex-col gap-2">
+              {PRICE_DATA.map((row, i) => {
+                // Нормализация для полоски (чтобы водка была максимумом)
+                const maxVal = 10;
+                const vals: Record<string, number> = {
+                  "Хлеб ржаной, кг": 0.5, "Говядина, кг": 2, "Водка, ведро ~12 л": maxVal,
+                  "Аренда комнаты / мес": 8, "Пара сапог": 5, "Пиво Крюгера 0,5 л ★": 0.175,
+                };
+                const pctBar = Math.round((vals[row.item] ?? 1) / maxVal * 100);
+                return (
+                  <div key={row.item}
+                    className={`rounded-xl px-4 py-3 ${row.highlight ? "" : ""}`}
+                    style={{
+                      background: row.highlight ? "rgba(201,162,39,0.07)" : "transparent",
+                      border: row.highlight ? "1px solid rgba(201,162,39,0.2)" : "1px solid transparent",
+                      opacity: prc.visible ? 1 : 0,
+                      transition: `opacity .5s ease ${i * 60}ms`,
+                    }}
+                  >
+                    <div className="flex items-center justify-between gap-3 mb-2">
+                      <span className={`font-mono text-[11px] ${row.highlight ? "text-accent" : "text-muted/70"}`}>{row.item}</span>
+                      <div className="text-right shrink-0">
+                        <span className={`font-mono text-sm font-bold ${row.highlight ? "text-accent" : "text-foreground/80"}`}>{row.old}</span>
+                        <span className="font-mono text-[9px] text-muted/40 ml-2">≈ {row.now}</span>
+                      </div>
+                    </div>
+                    <div className="h-1 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.04)" }}>
+                      <div className="h-full rounded-full"
+                        style={{
+                          width: prc.visible ? `${pctBar}%` : "0%",
+                          background: row.highlight
+                            ? "linear-gradient(to right, rgba(201,162,39,0.9), rgba(201,162,39,0.4))"
+                            : "rgba(201,162,39,0.3)",
+                          transition: `width .8s ease ${i * 60}ms`,
+                        }}
+                      />
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <div className="mt-5 pt-4 border-t border-amber-900/15">
-              <p className="font-mono text-[10px] text-muted/40 leading-relaxed">
+              <p className="font-mono text-[10px] text-muted/50 leading-relaxed">
                 Бутылка пива Крюгера — как пачка хлеба. Доступно рабочему, привлекательно купцу.
               </p>
             </div>
           </div>
+        </div>
+
+        {/* ── Калькулятор ── */}
+        <div ref={calc.ref} className="mb-10" style={{ opacity: calc.visible ? 1 : 0, transform: calc.visible ? "none" : "translateY(24px)", transition: "all .8s ease", willChange: "transform,opacity" }}>
+          <SalaryCalc />
         </div>
 
         {/* ── 5 причин — крупные карточки ── */}

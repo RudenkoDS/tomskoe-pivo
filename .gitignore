@@ -41,8 +41,9 @@ yarn-error.log*
 next-env.d.ts
 
 # heavy media — store separately (CDN/R2)
-*.mp4
 *.mov
 *.avi
-/public/scenes/
+/public/scenes/karl-pribytie.mp4
 /public/frames2_backup/
+hero.mp4
+screen2.mp4
