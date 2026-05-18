@@ -34,19 +34,45 @@ export function Hero() {
 
   useEffect(() => {
     let done = 0;
+    let cancelled = false;
+    let lastProgressUpdate = 0;
+    const CRITICAL = 12;
+    const TIMEOUT_MS = 10000;
+
     const imgs = Array.from({ length: FRAME_COUNT }, (_, i) => {
       const img = new Image();
       img.src = framePath(i + 1);
       img.onload = () => {
+        if (cancelled) return;
         done++;
-        setLoadProgress(Math.round((done / FRAME_COUNT) * 100));
-        if (done === 10) setReadyToShow(true);
+        const now = performance.now();
+        if (now - lastProgressUpdate > 80 || done === CRITICAL || done === 8) {
+          lastProgressUpdate = now;
+          setLoadProgress(Math.round((done / FRAME_COUNT) * 100));
+        }
+        if (done === 8) setReadyToShow(true);
+        if (done === CRITICAL) setLoaded(true);
+      };
+      img.onerror = () => {
+        if (cancelled) return;
+        done++;
         if (done === FRAME_COUNT) setLoaded(true);
       };
-      img.onerror = () => { done++; if (done === FRAME_COUNT) setLoaded(true); };
       return img;
     });
     imagesRef.current = imgs;
+
+    const fallback = setTimeout(() => {
+      if (cancelled) return;
+      cancelled = true;
+      setReadyToShow(true);
+      setLoaded(true);
+    }, TIMEOUT_MS);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(fallback);
+    };
   }, []);
 
   useEffect(() => {

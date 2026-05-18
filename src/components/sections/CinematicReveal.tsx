@@ -16,27 +16,71 @@ export function CinematicReveal() {
   const [readyToShow, setReadyToShow] = useState(false);
   const [loadProgress, setLoadProgress] = useState(0);
   const [visibleBeats, setVisibleBeats] = useState<string[]>([]);
+  const [shouldLoad, setShouldLoad] = useState(false);
 
   const { muted } = useAudio();
   const mutedRef = useRef(muted);
   useEffect(() => { mutedRef.current = muted; }, [muted]);
 
+  // Lazy init: start loading frames when section approaches viewport
   useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShouldLoad(true);
+          obs.disconnect();
+        }
+      },
+      { rootMargin: "200px" }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!shouldLoad) return;
     let done = 0;
+    let cancelled = false;
+    let lastProgressUpdate = 0;
+    const CRITICAL = 8;
+    const TIMEOUT_MS = 8000;
+
     const imgs = Array.from({ length: CINE_FRAME_COUNT }, (_, i) => {
       const img = new Image();
       img.src = cineFramePath(i + 1);
       img.onload = () => {
+        if (cancelled) return;
         done++;
-        setLoadProgress(Math.round((done / CINE_FRAME_COUNT) * 100));
-        if (done === 8) setReadyToShow(true);
+        const now = performance.now();
+        if (now - lastProgressUpdate > 80 || done === CRITICAL || done === CINE_FRAME_COUNT) {
+          lastProgressUpdate = now;
+          setLoadProgress(Math.round((done / CINE_FRAME_COUNT) * 100));
+        }
+        if (done === CRITICAL) { setReadyToShow(true); setLoaded(true); }
+      };
+      img.onerror = () => {
+        if (cancelled) return;
+        done++;
         if (done === CINE_FRAME_COUNT) setLoaded(true);
       };
-      img.onerror = () => { done++; if (done === CINE_FRAME_COUNT) setLoaded(true); };
       return img;
     });
     imagesRef.current = imgs;
-  }, []);
+
+    const fallback = setTimeout(() => {
+      if (cancelled) return;
+      cancelled = true;
+      setReadyToShow(true);
+      setLoaded(true);
+    }, TIMEOUT_MS);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(fallback);
+    };
+  }, [shouldLoad]);
 
   // Инициализация аудио
   useEffect(() => {
