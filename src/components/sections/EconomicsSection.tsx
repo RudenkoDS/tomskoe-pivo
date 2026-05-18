@@ -59,11 +59,11 @@ const PRICE_DATA = [
 ];
 
 const WHY = [
-  { n: "01", title: "33 800 жителей и рост +54%",      body: "К 1897 году — 52 221 человек. Постоянно прибывающее население = постоянный спрос." },
-  { n: "02", title: "Золотая элита с деньгами",         body: "Купцы Асташев, Горохов, Гадалов. Доходы в миллионы рублей. Им нужно качественное пиво." },
-  { n: "03", title: "100 000+ ямщиков на тракте",       body: "Московско-Сибирский тракт шёл через Томск. Люди хотят холодного пива после дороги." },
-  { n: "04", title: "Конкурентов практически нет",      body: "Местного пива не было — всё привозное и дорогое. Рынок полностью открыт." },
-  { n: "05", title: "Природный холод горы +4°C",        body: "Склон Острожной горы давал постоянную температуру без льда и машин. Идеально для лагера." },
+  { n: "01", icon: "👥", title: "33 800 жителей и рост +54%",      body: "К 1897 году — 52 221 человек. Постоянно прибывающее население = постоянный спрос.", stat: "+54%", statLabel: "рост за 17 лет" },
+  { n: "02", icon: "💰", title: "Золотая элита с деньгами",         body: "Купцы Асташев, Горохов, Гадалов. Доходы в миллионы рублей. Им нужно качественное пиво.", stat: ">1 млн", statLabel: "руб./год купцы" },
+  { n: "03", icon: "🛤",  title: "100 000+ ямщиков на тракте",       body: "Московско-Сибирский тракт шёл через Томск. Люди хотят холодного пива после дороги.", stat: "100к+", statLabel: "ямщиков в год" },
+  { n: "04", icon: "🏆", title: "Конкурентов практически нет",      body: "Местного пива не было — всё привозное и дорогое. Рынок полностью открыт.", stat: "0", statLabel: "местных конкурентов" },
+  { n: "05", icon: "❄",  title: "Природный холод горы +4°C",        body: "Склон Острожной горы давал постоянную температуру без льда и машин. Идеально для лагера.", stat: "+4°C", statLabel: "круглый год" },
 ];
 
 /* ── Калькулятор зарплат ── */
@@ -172,7 +172,7 @@ export function EconomicsSection() {
       <div className="relative z-10 mx-auto max-w-[1400px] px-6 md:px-10 py-24 md:py-32">
 
         {/* ── Заголовок ── */}
-        <div ref={hdr.ref} style={{ opacity: hdr.visible ? 1 : 0, transform: hdr.visible ? "none" : "translateY(28px)", transition: "all .8s ease", willChange: "transform,opacity" }} className="mb-16">
+        <div ref={hdr.ref} style={{ opacity: hdr.visible ? 1 : 0, transform: hdr.visible ? "none" : "translateY(28px)", transition: "opacity .8s ease, transform .8s ease" }} className="mb-16">
           <p className="font-mono text-[10px] tracking-[0.45em] text-accent/80 uppercase mb-4">Экономика · 1880–1900</p>
           <h2 className="font-sans text-5xl md:text-7xl font-black tracking-tighter text-foreground leading-[0.88] mb-6">
             Почему именно<br /><span className="text-accent">Томск?</span>
@@ -209,7 +209,7 @@ export function EconomicsSection() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
 
           {/* ── Бар-диаграмма зарплат — дашборд стиль ── */}
-          <div ref={sal.ref} className="card-surface p-6 md:p-8" style={{ opacity: sal.visible ? 1 : 0, transform: sal.visible ? "none" : "translateX(-28px)", transition: "all .8s ease", willChange: "transform,opacity" }}>
+          <div ref={sal.ref} className="card-surface p-6 md:p-8" style={{ opacity: sal.visible ? 1 : 0, transform: sal.visible ? "none" : "translateX(-28px)", transition: "opacity .8s ease, transform .8s ease" }}>
             <div className="flex items-end justify-between mb-6">
               <div>
                 <p className="font-mono text-[11px] tracking-[0.35em] text-accent/70 uppercase mb-1">Зарплаты в Томске</p>
@@ -222,14 +222,33 @@ export function EconomicsSection() {
             </div>
 
             {/* Горизонтальные полосы-бары — дашборд стиль */}
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-2">
               {SALARY_DATA.map((s, i) => (
-                <div key={s.label}>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className={`font-mono text-[11px] ${s.highlight ? "text-accent font-semibold" : "text-muted/65"}`}>{s.label}</span>
+                <div
+                  key={s.label}
+                  className="rounded-xl px-3 py-2.5"
+                  style={{
+                    background: s.highlight ? "rgba(201,162,39,0.07)" : "transparent",
+                    border: s.highlight ? "1px solid rgba(201,162,39,0.22)" : "1px solid transparent",
+                    boxShadow: s.highlight ? "0 0 20px rgba(201,162,39,0.06)" : "none",
+                    transition: "background 0.3s ease",
+                  }}
+                >
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center gap-2">
+                      {s.highlight && (
+                        <span style={{
+                          display: "inline-block", width: "6px", height: "6px",
+                          borderRadius: "50%", background: "rgba(201,162,39,1)",
+                          boxShadow: "0 0 6px rgba(201,162,39,0.8)",
+                          flexShrink: 0,
+                        }} />
+                      )}
+                      <span className={`font-mono text-[11px] ${s.highlight ? "text-accent font-bold" : "text-muted/65"}`}>{s.label}</span>
+                    </div>
                     <div className="text-right">
                       <span className={`font-mono text-[12px] font-bold ${s.highlight ? "text-accent" : "text-foreground/70"}`}>{s.rub} руб.</span>
-                      <span className="font-mono text-[9px] text-muted/40 ml-2">≈ {s.today}</span>
+                      <span className="font-mono text-[9px] text-muted/40 ml-2 hidden sm:inline">≈ {s.today}</span>
                     </div>
                   </div>
                   <div className="h-2 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.04)" }}>
@@ -238,14 +257,14 @@ export function EconomicsSection() {
                       style={{
                         width: sal.visible ? `${s.pct}%` : "0%",
                         background: s.highlight
-                          ? "linear-gradient(to right, rgba(201,162,39,1), rgba(201,162,39,0.6))"
+                          ? "linear-gradient(to right, rgba(201,162,39,1), rgba(201,162,39,0.55))"
                           : s.color,
                         transition: `width .9s cubic-bezier(.34,1.2,.64,1) ${i * 80}ms`,
-                        boxShadow: s.highlight ? "0 0 8px rgba(201,162,39,0.5)" : "none",
+                        boxShadow: s.highlight ? "0 0 10px rgba(201,162,39,0.55)" : "none",
                       }}
                     >
                       {s.highlight && (
-                        <div className="absolute inset-0 animate-pulse" style={{ background: "linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent)" }} />
+                        <div className="absolute inset-0 animate-pulse" style={{ background: "linear-gradient(to right, transparent, rgba(255,255,255,0.25), transparent)" }} />
                       )}
                     </div>
                   </div>
@@ -266,7 +285,7 @@ export function EconomicsSection() {
           </div>
 
           {/* ── Цены — дашборд с прогресс-плашками ── */}
-          <div ref={prc.ref} className="card-surface p-6 md:p-8" style={{ opacity: prc.visible ? 1 : 0, transform: prc.visible ? "none" : "translateX(28px)", transition: "all .8s ease", willChange: "transform,opacity" }}>
+          <div ref={prc.ref} className="card-surface p-6 md:p-8" style={{ opacity: prc.visible ? 1 : 0, transform: prc.visible ? "none" : "translateX(28px)", transition: "opacity .8s ease, transform .8s ease" }}>
             <div className="flex items-end justify-between mb-6">
               <div>
                 <p className="font-mono text-[11px] tracking-[0.35em] text-accent/70 uppercase mb-1">Цены в Томске</p>
@@ -289,16 +308,27 @@ export function EconomicsSection() {
                 const pctBar = Math.round((vals[row.item] ?? 1) / maxVal * 100);
                 return (
                   <div key={row.item}
-                    className={`rounded-xl px-4 py-3 ${row.highlight ? "" : ""}`}
+                    className="rounded-xl px-4 py-3"
                     style={{
                       background: row.highlight ? "rgba(201,162,39,0.07)" : "transparent",
-                      border: row.highlight ? "1px solid rgba(201,162,39,0.2)" : "1px solid transparent",
+                      border: row.highlight ? "1px solid rgba(201,162,39,0.22)" : "1px solid transparent",
+                      boxShadow: row.highlight ? "0 0 20px rgba(201,162,39,0.05)" : "none",
                       opacity: prc.visible ? 1 : 0,
                       transition: `opacity .5s ease ${i * 60}ms`,
                     }}
                   >
                     <div className="flex items-center justify-between gap-3 mb-2">
-                      <span className={`font-mono text-[11px] ${row.highlight ? "text-accent" : "text-muted/70"}`}>{row.item}</span>
+                      <div className="flex items-center gap-2">
+                        {row.highlight && (
+                          <span style={{
+                            display: "inline-block", width: "6px", height: "6px",
+                            borderRadius: "50%", background: "rgba(201,162,39,1)",
+                            boxShadow: "0 0 6px rgba(201,162,39,0.8)",
+                            flexShrink: 0,
+                          }} />
+                        )}
+                        <span className={`font-mono text-[11px] ${row.highlight ? "text-accent font-bold" : "text-muted/70"}`}>{row.item}</span>
+                      </div>
                       <div className="text-right shrink-0">
                         <span className={`font-mono text-sm font-bold ${row.highlight ? "text-accent" : "text-foreground/80"}`}>{row.old}</span>
                         <span className="font-mono text-[9px] text-muted/40 ml-2">≈ {row.now}</span>
@@ -329,7 +359,7 @@ export function EconomicsSection() {
         </div>
 
         {/* ── Калькулятор ── */}
-        <div ref={calc.ref} className="mb-10" style={{ opacity: calc.visible ? 1 : 0, transform: calc.visible ? "none" : "translateY(24px)", transition: "all .8s ease", willChange: "transform,opacity" }}>
+        <div ref={calc.ref} className="mb-10" style={{ opacity: calc.visible ? 1 : 0, transform: calc.visible ? "none" : "translateY(24px)", transition: "opacity .8s ease, transform .8s ease" }}>
           <SalaryCalc />
         </div>
 
@@ -343,32 +373,69 @@ export function EconomicsSection() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {WHY.map((w, i) => (
               <div key={w.n}
-                className="card-surface p-7 group hover:border-accent/35 transition-all duration-300 cursor-default"
-                style={{ opacity: why.visible ? 1 : 0, transform: why.visible ? "none" : "translateY(24px)", transition: `all .6s ease ${i * 80}ms`, willChange: "transform,opacity" }}
+                className="group cursor-default rounded-[20px] border border-[rgba(201,162,39,0.12)] p-6 flex flex-col gap-3"
+                style={{
+                  background: "linear-gradient(145deg, rgba(201,162,39,0.05) 0%, rgba(13,11,7,0.85) 100%)",
+                  backdropFilter: "blur(6px)",
+                  opacity: why.visible ? 1 : 0,
+                  transform: why.visible ? "none" : "translateY(24px)",
+                  transition: `opacity .6s ease ${i * 80}ms, transform .6s ease ${i * 80}ms, box-shadow .25s ease, border-color .25s ease`,
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.cssText += ";transform:translateY(-5px);box-shadow:0 20px 48px rgba(0,0,0,0.5),0 0 28px rgba(201,162,39,0.08);border-color:rgba(201,162,39,0.3)";
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.cssText += ";transform:none;box-shadow:none;border-color:rgba(201,162,39,0.12)";
+                }}
               >
-                <span className="font-sans text-5xl font-black text-accent/20 group-hover:text-accent/35 transition-colors leading-none block mb-4">{w.n}</span>
-                <p className="font-sans text-base font-bold text-foreground mb-2 leading-snug">{w.title}</p>
-                <p className="font-mono text-[11px] text-muted/65 leading-relaxed">{w.body}</p>
+                {/* Верхняя строка: номер + иконка */}
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-[10px] tracking-[0.35em] text-accent/40 uppercase">{w.n}</span>
+                  <span className="text-2xl" style={{ filter: "saturate(0.7) brightness(1.1)" }}>{w.icon}</span>
+                </div>
+
+                {/* Статистика */}
+                <div>
+                  <p style={{
+                    fontFamily: "sans-serif", fontWeight: 900,
+                    fontSize: "clamp(1.6rem,2.5vw,2.1rem)",
+                    color: "rgba(201,162,39,1)", letterSpacing: "-0.03em", lineHeight: 1,
+                    textShadow: "0 0 20px rgba(201,162,39,0.4)",
+                  }}>{w.stat}</p>
+                  <p className="font-mono text-[9px] text-muted/50 uppercase tracking-widest mt-0.5">{w.statLabel}</p>
+                </div>
+
+                {/* Заголовок */}
+                <p className="font-sans text-sm font-bold text-foreground/90 leading-snug">{w.title}</p>
+
+                {/* Описание */}
+                <p className="font-mono text-[10.5px] text-muted/60 leading-relaxed border-t border-white/5 pt-3">{w.body}</p>
               </div>
             ))}
 
             {/* Итоговая карточка */}
-            <div className="p-7 rounded-2xl flex flex-col justify-between"
+            <div
+              className="rounded-[20px] border border-[rgba(201,162,39,0.22)] p-6 flex flex-col justify-between relative overflow-hidden"
               style={{
-                background: "linear-gradient(135deg, rgba(201,162,39,0.08), rgba(201,162,39,0.02))",
-                border: "1px solid rgba(201,162,39,0.2)",
+                background: "linear-gradient(135deg, rgba(201,162,39,0.09), rgba(201,162,39,0.02))",
                 opacity: why.visible ? 1 : 0,
                 transform: why.visible ? "none" : "translateY(24px)",
-                transition: "all .6s ease 400ms",
+                transition: "opacity .6s ease 400ms, transform .6s ease 400ms",
               }}
             >
+              <span aria-hidden="true" style={{
+                position: "absolute", top: "-20px", left: "10px",
+                fontFamily: "Georgia, serif", fontSize: "8rem",
+                color: "rgba(201,162,39,0.07)", lineHeight: 1,
+                pointerEvents: "none", userSelect: "none",
+              }}>&ldquo;</span>
               <div>
-                <p className="font-mono text-[9px] tracking-[0.3em] text-accent/50 uppercase mb-4">Итог</p>
+                <p className="font-mono text-[9px] tracking-[0.35em] text-accent/50 uppercase mb-4">Итог</p>
                 <p className="font-sans text-xl md:text-2xl font-bold text-foreground/85 italic leading-snug">
                   «Он понял это<br />лучше, чем многие»
                 </p>
               </div>
-              <p className="font-mono text-[10px] text-muted/50 mt-4">Карл Крюгер · Томск · 1876</p>
+              <p className="font-mono text-[10px] text-muted/50 mt-4 border-t border-accent/10 pt-3">Карл Крюгер · Томск · 1876</p>
             </div>
           </div>
         </div>
