@@ -75,6 +75,7 @@ function VideoThumb({
         muted
         playsInline
         loop
+        preload="none"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
 
@@ -116,6 +117,7 @@ function MainVideo({ src, vertical = false }: { src: string; vertical?: boolean 
         muted
         playsInline
         loop
+        preload="none"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
 

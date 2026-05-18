@@ -93,6 +93,7 @@ function FilmCard({ film }: { film: typeof FILMS[number] }) {
           muted
           playsInline
           loop
+          preload="none"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         {/* Episode badge */}
