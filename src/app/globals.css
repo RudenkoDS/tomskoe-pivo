@@ -19,11 +19,20 @@
   --color-accent-soft: var(--accent-soft);
 }
 
-html, body {
+html {
+  font-size: 18px;
+}
+
+body {
   background: var(--background);
   color: var(--foreground);
   -webkit-font-smoothing: antialiased;
   moz-osx-font-smoothing: grayscale;
+}
+
+/* Минимальный читаемый размер для mono-меток и подписей */
+.font-mono {
+  font-size: max(0.72rem, 12px);
 }
 
 .scroll-animation {
